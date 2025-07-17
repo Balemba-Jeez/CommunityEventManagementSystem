@@ -1,11 +1,10 @@
-import { connectToDatabase } from '@/lib/db';
+import db from '@/lib/db';
 
 export async function POST(req) {
   const body = await req.json();
   const { name, email, password, image = null, zone_id = null } = body;
 
   try {
-    const db = await connectToDatabase();
 
     // 1. Check if email already exists
     const [existingUser] = await db.execute(
