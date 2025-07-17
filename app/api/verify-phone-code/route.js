@@ -1,12 +1,12 @@
 import db from '@/lib/db';
 
 export async function POST(req) {
-  const { email, code } = await req.json();
+  const { phoneNumber, code } = await req.json();
   
   //check existence of code which has not expired and is correct
   const [rows] = await db.execute(
-    'SELECT * FROM verifications WHERE email = ? AND code = ? AND expires_at >= NOW()',
-    [email, code]
+    'SELECT * FROM phone_verifications WHERE phone_number = ? AND code = ? AND expires_at >= NOW()',
+    [phoneNumber, code]
   );
   
   //check if result(rows) is empty implying code is wrong or expired.
@@ -15,7 +15,7 @@ export async function POST(req) {
   }
 
   // delete the code after successful verification
-  await db.execute('DELETE FROM verifications WHERE email = ?', [email]);
+  await db.execute('DELETE FROM phone_verifications WHERE phone_number = ?', [phoneNumber]);
 
-  return new Response(JSON.stringify({ message: 'Email verified!' }), { status: 200 });
+  return new Response(JSON.stringify({ message: 'Phone number verified!' }), { status: 200 });
 }
