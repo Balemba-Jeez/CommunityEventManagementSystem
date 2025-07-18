@@ -1,53 +1,38 @@
 import db from '@/lib/db';
-
+import { verifyToken } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
-
-
-export async function GET(req){
-    const {searchParams} = new URL(req.url);
-    const email = searchParams.get('email');
-
-    try {
-            // console.log('query results',await db.execute(
-            //     'SELECT * FROM users'));
-
-            //Check if email already exists
-              if (rows.length > 0) {
-                return new Response(JSON.stringify({ message: 'request successful' }), {
-                  status: 200,
-                });
-              }
-              return new Response(JSON.stringify({ message: 'resource not found' }), {
-                status: 404,
-              });
-              
-    } catch (error) {
-        console.error('DB error in GET:', error);
-        return new Response(JSON.stringify({ message: 'Server error' }), {
-            status: 500,
-        });
-    }
-
-    console.log(searchParams, email)
-}
-
 export async function POST(req) {
-  const body = await req.json();
-  const { name, email, password, image = null, zone_id = null } = body;
 
   try {
+
+    const body = await req.json();
+    const { name, email, password, image = null, zone_id = null, tel = '+237678189559' } = body;
+    const status = 'visitor';
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Insert new user
-    const [result] = await db.execute(
-      `INSERT INTO users (name, email, password, image, zone_id)
-       VALUES (?, ?, ?, ?, ?)`,
-      [name, email, hashedPassword, image, zone_id]
+    const [user_result] = await db.execute(
+      `INSERT INTO users (name, email, password, image, zone_id, tel)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [name, email, hashedPassword, image, zone_id, tel]
     );
 
-    return new Response(JSON.stringify({ message: 'User created', userId: result.insertId }), {
+    console.log(user_result);
+
+    //Search role id
+    const [rows] = await db.execute(`
+        select id from roles where name = ?`, [status])
+
+    //Insert new role for user
+    const [role_result] = await db.execute(
+        `INSERT INTO user_roles (user_id, role_id)
+            VALUES (?, ?)`,
+        [user_result.insertId, rows[0].id]
+        );
+
+    return new Response(JSON.stringify({ message: 'User created', userId: user_result.insertId }), {
       status: 201,
     });
 
@@ -56,3 +41,5 @@ export async function POST(req) {
     return new Response(JSON.stringify({ message: 'Server error' }), { status: 500 });
   }
 }
+
+
