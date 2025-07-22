@@ -1,5 +1,5 @@
 import db from '@/lib/db';
-import { verifyToken } from '@/lib/auth'; 
+import { verifyToken } from '@/lib/security/token'; 
 
 
 export async function GET(req, context) {
@@ -19,7 +19,7 @@ export async function GET(req, context) {
     const token = authHeader?.split(' ')[1]; // Bearer <token>
 
         // If we have email parameter then that means we do email existence check
-        if (email) { 
+        if (email) {     
 
             // console.log('query results',await db.execute(
             //     'SELECT * FROM users'));
@@ -218,10 +218,16 @@ export async function DELETE(req, { params }) {
   const { id } = params;
 
   try {
-    // (Optional) Extract token from headers and verify
+    // Extract token from headers and verify
     const token = req.headers.get('authorization')?.split(' ')[1];
     const user = verifyToken(token);
+    console.log('user-token',user)
+    if (!user) {
+    return new Response(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });
+    }
 
+    const { name:role } = user.role[0];
+    
     if (user.role !== 'admin') {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403 });
     }

@@ -1,5 +1,4 @@
 import db from '@/lib/db';
-import { verifyToken } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
