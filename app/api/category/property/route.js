@@ -18,7 +18,7 @@ export async function POST(req) {
             return NextResponse.json({ message: "Forbidden" }, { status: 403 });
         }
 
-        const { category_id, property_key, data_type = 'string' } = await req.json();
+        const { category_id, property_key, data_type = 'string', max_values = 1 } = await req.json();
 
         // Body Check - Required fields
         if (!category_id || !property_key) {
@@ -32,6 +32,13 @@ export async function POST(req) {
         if (!validDataTypes.includes(data_type)) {
             return NextResponse.json({
                 message: `Bad request: data_type must be one of: ${validDataTypes.join(', ')}`
+            }, { status: 400 });
+        }
+
+        // Validate max_values
+        if (max_values && (!Number.isInteger(Number(max_values)) || Number(max_values) < 1)) {
+            return NextResponse.json({
+                message: "Bad request: max_values must be a positive integer"
             }, { status: 400 });
         }
 
@@ -67,11 +74,12 @@ export async function POST(req) {
 
         // Insert new category property
         const [result] = await db.execute(
-            "INSERT INTO category_properties (category_id, property_key, data_type) VALUES (?, ?, ?)",
+            "INSERT INTO category_properties (category_id, property_key, data_type, max_values) VALUES (?, ?, ?, ?)",
             [
                 category_id,
                 property_key,
-                data_type
+                data_type,
+                max_values
             ]
         );
 
