@@ -2,6 +2,9 @@ import db from "@/lib/db";
 import { isAuthenticated, isAuthorized } from "@/lib/security/auth";
 import { NextResponse } from "next/server";
 
+
+
+
 export async function POST(req) {
     try {
         // Get token from request header
@@ -19,7 +22,7 @@ export async function POST(req) {
             return NextResponse.json({ message: "Forbidden" }, { status: 403 });
         }
 
-        const { title, description, location, start_time, organizer_id, category_id, image_url, status } = await req.json();
+        const { title, description = null, location, start_time, organizer_id, category_id = null, image_url = null, status = null } = await req.json();
 
         // Body Check - Required fields
         if (!title || !location || !start_time || !organizer_id) {
@@ -31,7 +34,7 @@ export async function POST(req) {
         // Check if category exists (if category_id is provided)
         if (category_id) {
             const [existingCategory] = await db.execute(
-                "SELECT id FROM categories WHERE id = ?", // Fixed table name case
+                "SELECT id FROM categories WHERE id = ?", 
                 [category_id] // Fixed typo: was category_ide
             );
 
@@ -48,7 +51,7 @@ export async function POST(req) {
 
         // Check if organizer exists
         const [existingOrganizer] = await db.execute(
-            "SELECT id FROM users WHERE id = ? AND role IN ('zone_event_manager', 'general_event_manager')",
+            "SELECT id FROM users WHERE id = ?",
             [organizer_id]
         );
 
@@ -62,7 +65,7 @@ export async function POST(req) {
             );
         }
 
-        // Optional: Check for duplicate events (same title, location, and start_time)
+        //Check for duplicate events (same title, location, and start_time)
         const [existingEvent] = await db.execute(
             "SELECT id FROM events WHERE title = ? AND location = ? AND start_time = ?",
             [title, location, start_time]
@@ -83,13 +86,13 @@ export async function POST(req) {
             "INSERT INTO events (title, description, location, start_time, organizer_id, category_id, image_url, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             [
                 title, 
-                description || null, // Optional field
+                description, 
                 location, 
                 start_time, 
                 organizer_id, 
-                category_id || null, // Optional field
-                image_url || null, // Optional field
-                status || 'pending' // Default to 'pending' if not provided
+                category_id, 
+                image_url, 
+                status 
             ]
         );
 

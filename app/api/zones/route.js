@@ -47,7 +47,7 @@ try {
 
 } catch (err) {
 
-    console.error('Error retrieving user role:', err);
+    console.error('Error retrieving Zones:', err);
     console.error('Error stack:', err.stack);
     return NextResponse.json(
         { error: 'Internal Server Error', details: err.message }, 
