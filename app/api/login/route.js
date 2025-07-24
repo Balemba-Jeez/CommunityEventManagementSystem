@@ -56,6 +56,7 @@ export async function POST(req) {
         id: user.id,
         email: user.email,
         role: userRoles,
+        zone: user.zone_id
       },
       SECRET,
       { expiresIn: '1d' }

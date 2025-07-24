@@ -37,52 +37,59 @@ export async function PUT(req, { params }) {
         }
 
         // Collect data to be Updated in the Category
-        const { name, description = null, image_url = null, zone_id = null, parent_id = null } = await req.json();
+        const { name, description = null, image_url = null, parent_id = null } = await req.json();
 
         // Validate required fields
-        if (!name || !user.id) {
+        if (!name) {
             return NextResponse.json(
                 { error: 'Bad request: name and user id is required' },
                 { status: 400 }
             );
         }
 
-        // Zone Event Managers must provide a valid zone_id
-        if (isAuthorized(user, ['zone_event_manager'])) {
-            if (!zone_id) {
-              return NextResponse.json({ message: "Bad request: zone_id is required for zone_event_manager" }, { status: 400 });
-            }
 
-            // Check if zone exist
-            const [zone] = await db.execute("SELECT id FROM zones WHERE id = ?", [zone_id]);
-            if (zone.length === 0) {
-                return NextResponse.json({ message: `Zone with ID '${zone_id}' does not exist` }, { status: 404 });
-            }
-        }
+        const [existing] = await db.execute(
+            `SELECT id FROM categories WHERE name = ? AND id != ?`,
+            [name, id]
+          );
+          
+          if (existing.length > 0) {
+            return NextResponse.json(
+              { message: "Category name already exists. Category name will be unique" },
+              { status: 409 } // Conflict
+            );
+          }
        
         // Update Category in database
         const [result] = await db.execute(
             `UPDATE categories SET name = ?, description = ?, image_url = ?, zone_id = ?, parent_id = ?, user_id = ? WHERE id = ?`, 
-            [name, description || null, image || null, zone_id, parent_id, user.id, id]
+            [name, description || null, image_url || null, user.zone, parent_id, user.id, id]
         );
        
         if (result.affectedRows === 0) {
             return NextResponse.json(
-                { error: 'Failed to update zone' },
-                { status: 500 }
+                { error: `Category with ID '${id}' does not exist` },
+                { status: 404 }
+            );
+        }
+
+        if (result.changedRows === 0) {
+            return NextResponse.json(
+                { error: `No changes made. Category ${id} data is already up to date` },
+                { status: 200 }
             );
         }
 
 
         // Fetch updated zone
         const [updatedZone] = await db.execute(
-            `SELECT * FROM zones WHERE id = ?`, 
+            `SELECT * FROM Categories WHERE id = ?`, 
             [id]
         );
        
         return NextResponse.json(
             { 
-                message: 'Zone updated successfully',
+                message: 'Category updated successfully',
                 zone: updatedZone[0]
             },
             { status: 200 }
