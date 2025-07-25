@@ -2,10 +2,12 @@ import db from "@/lib/db";
 import { isAuthenticated, isAuthorized } from "@/lib/security/auth";
 import { NextResponse } from "next/server";
 
-export async function GET(req) {
+export async function GET(req, {params}) {
 
 try {
-           
+
+    // Await the params object first, then access the id
+    const { id } = await params;
     // Get token from request header
   const authHeader = req.headers.get("authorization");
   const token = authHeader?.split(" ")[1]; // Bearer <token>

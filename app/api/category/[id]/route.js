@@ -2,7 +2,119 @@ import db from "@/lib/db";
 import { isAuthenticated, isAuthorized } from "@/lib/security/auth";
 import { NextResponse } from "next/server";
 
+export async function GET(req, {params}) {
 
+try {
+
+    // Await the params object first, then access the id
+    const { id } = await params;
+           
+    // Get token from request header
+  const authHeader = req.headers.get("authorization");
+  const token = authHeader?.split(" ")[1]; // Bearer <token>
+
+  // Request Authentication
+  const auth = isAuthenticated(token);
+  if (!auth.ok) return auth.response;
+
+  const user = auth.user;
+  console.log('User authenticated:', user);
+
+  // Request Authorization
+  if (!isAuthorized(user, ['zone_event_manager','general_event_manager'])) {
+    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+  }
+
+    // Validate id parameter
+    if (!id) {
+
+    return NextResponse.json(
+        { error: 'Bad request: missing Category ID' }, 
+        { status: 400 }
+    );
+
+    }
+
+    // Collect the zone or user that he wants he's Category
+    const url = new URL(req.url);
+    const zone = url.searchParams.get('zone');
+    const user_id = url.searchParams.get('user_id');
+
+    if (isAuthorized(user, ['general_event_manager']) && (zone || user_id)) {
+
+        let selectField = '';
+        let values = [];
+
+        if (zone || user_id) {
+             selectField = zone ? `zone_id = ?` : `user_id = ?`
+                  values =  zone ? [zone] : [user_id]
+
+        }
+
+        if (zone && user_id) {
+
+            selectField = `zone_id = ? AND user_id = ?`
+                 values =  [zone, user_id]
+             
+        }
+ 
+        values.unshift(id);
+
+            // Fetch Category from database
+            const [rows] = await db.execute(`SELECT * FROM categories WHERE id = ? AND ${selectField}`, values);
+            if (rows.length === 0) {
+                return NextResponse.json(
+                    { error: `Category ${id} ${user_id ? `for user ${user_id}` : ''} ${zone ? `belonging to zone ${zone}` : ''} not found`.trim() }, 
+                    { status: 404 }
+                );
+                }
+            
+              // Return the Zone data
+              return NextResponse.json(
+                {
+                    message: 'Category found successfully',
+                    zones: rows[0]
+                },
+                 
+                { status: 200 }
+                );
+
+    }
+
+  console.log('About to execute database query');
+        
+  // Fetch Category from database
+  const [rows] = await db.execute(`SELECT * FROM categories WHERE id = ? AND zone_id = ? AND  user_id = ?`, [id, user.zone, user.id]);
+
+  if (rows.length === 0) {
+    return NextResponse.json(
+        { error: `Category '${id}' not found` }, 
+        { status: 404 }
+    );
+    }
+
+  // Return the Zone data
+  return NextResponse.json(
+    {
+        message: 'Category found successfully',
+        zones: rows[0]
+    },
+     
+    { status: 200 }
+    );
+
+} catch (err) {
+
+    console.error('Error retrieving user role:', err);
+    console.error('Error stack:', err.stack);
+    return NextResponse.json(
+        { error: 'Internal Server Error'}, 
+        { status: 500 }
+        );
+    }     
+
+    
+}
 
 export async function PATCH(req, { params }) {
     try {
