@@ -239,6 +239,9 @@ export async function PUT(req, { params }) {
     }
 }
 
+
+
+
 export async function DELETE(req, { params }) {
     try {
         // Await the params object first, then access the id
