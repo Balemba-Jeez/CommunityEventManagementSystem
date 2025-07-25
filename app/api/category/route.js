@@ -21,18 +21,6 @@ export async function POST(req) {
       return NextResponse.json({ message: "Bad request: name is required" }, { status: 400 });
     }
 
-    // Zone Event Managers must provide a valid zone_id
-    if (isAuthorized(user, ['zone_event_manager'])) {
-      if (!zone_id) {
-        return NextResponse.json({ message: "Bad request: zone_id is required for zone_event_manager" }, { status: 400 });
-      }
-
-      // Check if zone exist
-      const [zone] = await db.execute("SELECT id FROM zones WHERE id = ?", [zone_id]);
-      if (zone.length === 0) {
-        return NextResponse.json({ message: `Zone with ID '${zone_id}' does not exist` }, { status: 404 });
-      }
-    }
 
     // Check parent category (if provided)
     if (parent_id) {
