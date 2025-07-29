@@ -2,7 +2,67 @@ import db from "@/lib/db";
 import { isAuthenticated, isAuthorized } from "@/lib/security/auth";
 import { NextResponse } from "next/server";
 
-export async function POST(req) {
+
+export async function GET(req, {params}) {
+
+    try {
+               
+        // Get token from request header
+      const authHeader = req.headers.get("authorization");
+      const token = authHeader?.split(" ")[1]; // Bearer <token>
+    
+      // Request Authentication
+      const auth = isAuthenticated(token);
+      if (!auth.ok) return auth.response;
+    
+      const user = auth.user;
+      console.log('User authenticated:', user);
+    
+      // Request Authorization
+      if (!isAuthorized(user, ['zone_event_manager','general_event_manager'])) {
+        return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+      }
+
+        // Await the params object first, then access the id
+        const { id } = await params;
+    
+    
+      console.log('About to execute database query');
+            
+      // Fetch properties for a particular category from database
+      const [rows] = await db.execute(`SELECT * FROM category_properties WHERE category_id = ?`, [id]);
+    
+      if (rows.length === 0) {
+        return NextResponse.json(
+            { error: `No properties found for category ${id}` }, 
+            { status: 404 }
+        );
+        }
+    
+      // Return the Zone data
+      return NextResponse.json(
+        {
+            message: 'Properties found successfully',
+            properties: rows
+        },
+         
+        { status: 200 }
+        );
+    
+    } catch (err) {
+    
+        console.error('Error retrieving Zones:', err);
+        console.error('Error stack:', err.stack);
+        return NextResponse.json(
+            { error: 'Internal Server Error', details: err.message }, 
+            { status: 500 }
+            );
+        }     
+    
+        
+    }
+
+export async function POST(req, {params}) {
     try {
         // Get token from request header
         const authHeader = req.headers.get("authorization");
@@ -18,7 +78,10 @@ export async function POST(req) {
             return NextResponse.json({ message: "Forbidden" }, { status: 403 });
         }
 
-        const { category_id, property_key, data_type = 'string', max_values = 1 } = await req.json();
+        // Await the params object first, then access the id
+        const { id:category_id } = await params;
+
+        const { property_key, data_type = 'string', max_values = 1 } = await req.json();
 
         // Body Check - Required fields
         if (!category_id || !property_key) {
