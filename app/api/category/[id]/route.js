@@ -40,6 +40,7 @@ try {
     const zone = url.searchParams.get('zone');
     const user_id = url.searchParams.get('user_id');
 
+    // General event manager wants to collect a particular category 
     if (isAuthorized(user, ['general_event_manager']) && (zone || user_id)) {
 
         let selectField = '';
@@ -83,7 +84,7 @@ try {
 
   console.log('About to execute database query');
         
-  // Fetch Category from database
+  // Fetch all Category for a paricular zone_event manager or general _event_manager.
   const [rows] = await db.execute(`SELECT * FROM categories WHERE id = ? AND zone_id = ? AND  user_id = ?`, [id, user.zone, user.id]);
 
   if (rows.length === 0) {
