@@ -1,6 +1,7 @@
 import db from '@/lib/db';
 
 import { sendVerificationEmail } from '@/lib/mailer';
+import generateCode from '@/lib/generateCode';
 
 export async function POST(req) {
   const { email } = await req.json();
@@ -11,7 +12,7 @@ export async function POST(req) {
   }
 
   // Generate 6-digit code
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const code = generateCode(6);
 
   // Set expiry time (e.g., 4 minutes from now)
   const expires = new Date(Date.now() + 4 * 60 * 1000);
