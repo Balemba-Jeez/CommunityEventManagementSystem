@@ -1,9 +1,9 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import db from "@/lib/db";
-import { NextResponse } from "next/server";
-
-const JWT_SECRET = process.env.JWT_SECRET; 
+import { NextResponse } from "next/server"; 
+import { generateTokenV2 } from "@/lib/security/token";
+import { markResetCodeUsed } from "@/lib/security/generateCode";
 
 export async function POST(req) {
   try {
@@ -39,12 +39,17 @@ export async function POST(req) {
     if (!isValid) {
     return NextResponse.json({ error: "Invalid or expired code" }, { status: 400 });
     }
+    // Mark reset code as used when code verification is done
+    await markResetCodeUsed(latestCode.id);
+
     // Create JWT token for password reset (expires in 10 mins)
-    const token = jwt.sign(
-      { userId: user.id, purpose: "password_reset" },
-      JWT_SECRET,
-      { expiresIn: "10m" }
+    const token = await generateTokenV2(
+      "password_reset",
+      { userId: user.id, purpose: "password_reset" }
     );
+
+    console.log('verify token',token);
+
 
     return NextResponse.json({ message: "Code verified", token }, { status: 200 });
   } catch (error) {
