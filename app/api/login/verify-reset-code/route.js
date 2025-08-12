@@ -19,8 +19,11 @@ export async function POST(req) {
 
     const user = users[0];
 
+    console.log(user)
+
+    // Get the latest valid reset code for the user
     const [latestCodes] = await db.execute(
-    "SELECT * FROM password_resets WHERE user_id = ? ORDER BY version DESC LIMIT 1",
+    "SELECT * FROM password_resets WHERE user_id = ? AND created_at = (SELECT MAX(created_at) FROM password_resets) AND used_at IS NULL",
     [user.id]
     );
 
@@ -30,6 +33,8 @@ export async function POST(req) {
 
     const latestCode = latestCodes[0];
 
+    
+    // Verify the reset code
     const isValid = await bcrypt.compare(code, latestCode.reset_code);
     if (!isValid) {
     return NextResponse.json({ error: "Invalid or expired code" }, { status: 400 });

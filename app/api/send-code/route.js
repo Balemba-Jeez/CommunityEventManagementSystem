@@ -1,7 +1,8 @@
 import db from '@/lib/db';
 
 import { sendVerificationEmail } from '@/lib/mailer';
-import generateCode from '@/lib/generateCode';
+import generateCode from "@/lib/security/generateCode"
+import getExpirationTime from '@/lib/security/generateCodeTimeFrame';
 
 export async function POST(req) {
   const { email } = await req.json();
@@ -11,11 +12,11 @@ export async function POST(req) {
     return new Response(JSON.stringify({ error: 'Email is required' }), { status: 400 });
   }
 
-  // Generate 6-digit code
-  const code = generateCode(6);
+  // Generate email_verification code
+  const code = generateCode("email_verification");
 
-  // Set expiry time (e.g., 4 minutes from now)
-  const expires = new Date(Date.now() + 4 * 60 * 1000);
+  // Set expiry time for email_verification
+  const expires = getExpirationTime("email_verification");
   console.log(expires);
 
   // Save to database

@@ -8,11 +8,17 @@ export async function POST(req) {
   try {
     const { token, newPassword } = await req.json();
 
-    try {
-      const user = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 400 });
-    }
+
+        // Get token from request header
+      const authHeader = req.headers.get("authorization");
+      const token = authHeader?.split(" ")[1]; // Bearer <token>
+    
+      // Request Authentication
+      const auth = isAuthenticated(token);
+      if (!auth.ok) return auth.response;
+    
+      const user = auth.user;
+      console.log('User authenticated:', user);
 
     // Hash and update password
     const hashedPassword = await bcrypt.hash(newPassword, 12);
