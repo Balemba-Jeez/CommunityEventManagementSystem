@@ -22,47 +22,31 @@ export async function POST(req) {
             return NextResponse.json({ message: "Forbidden" }, { status: 403 });
         }
 
-        const { title, description = null, location, start_time, organizer_id, category_id = null, image_url = null, status = null } = await req.json();
+        const { title, description = null, location, start_time, category_id = null, status = 'draft', image_url = null, } = await req.json();
 
         // Body Check - Required fields
-        if (!title || !location || !start_time || !organizer_id) {
+        if (!title || !location || !start_time) {
             return NextResponse.json({ 
-                message: "Bad request: title, location, start_time, and organizer_id are required" 
+                message: "Bad request: title, location, start_time are required" 
             }, { status: 400 });
         }
 
-        // Check if category exists (if category_id is provided)
+        // Check if category exists (if category_id is provided) for that user
         if (category_id) {
             const [existingCategory] = await db.execute(
-                "SELECT id FROM categories WHERE id = ?", 
-                [category_id] // Fixed typo: was category_ide
+                "SELECT id FROM categories WHERE id = ? and user_id = ?", 
+                [category_id, user.id]
             );
 
-            if (existingCategory.length === 0) { // Fixed: was existingZone
+            if (existingCategory.length === 0) { 
                 return NextResponse.json(
                     {
-                        error: "Category not found",
-                        message: `Category with ID '${category_id}' does not exist`
+                        error: "Category not found or Unauthorized",
+                        message: `Category ${category_id} not found or does not exist for user`
                     },
-                    { status: 404 } // 404 Not Found (not 409 Conflict)
+                    { status: 403 } // 403 Unathorized (not 409 Conflict)
                 );
             }
-        }
-
-        // Check if organizer exists
-        const [existingOrganizer] = await db.execute(
-            "SELECT id FROM users WHERE id = ?",
-            [organizer_id]
-        );
-
-        if (existingOrganizer.length === 0) {
-            return NextResponse.json(
-                {
-                    error: "Organizer not found",
-                    message: `Organizer with ID '${organizer_id}' does not exist or is not authorized to organize events`
-                },
-                { status: 404 }
-            );
         }
 
         //Check for duplicate events (same title, location, and start_time)
@@ -89,7 +73,7 @@ export async function POST(req) {
                 description, 
                 location, 
                 start_time, 
-                organizer_id, 
+                user.id, 
                 category_id, 
                 image_url, 
                 status 
@@ -99,7 +83,7 @@ export async function POST(req) {
         return NextResponse.json(
             { 
                 message: "Event created successfully", 
-                eventId: result.insertId 
+                event: result.insertId 
             },
             { status: 201 }
         );
