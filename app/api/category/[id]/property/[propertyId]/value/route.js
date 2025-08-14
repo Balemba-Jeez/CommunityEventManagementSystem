@@ -28,7 +28,7 @@ export async function GET(req, {params}) {
         // Check - Required fields
         if (!event_id || !property_id || !id) {
             return NextResponse.json({
-                message: "Bad request: event_id, property_id and value are required"
+                message: "Bad request: event_id, property_id and category are required"
             }, { status: 400 });
         }
 
@@ -84,36 +84,26 @@ export async function GET(req, {params}) {
         );
         }
 
-        // Check if event exists
-        const [existingEvent] = await db.execute(
-            "SELECT id FROM events WHERE id = ?",
-            [event_id]
-        );
-        if (existingEvent.length === 0) {
+        // Check event ownership
+            const [event] = await db.execute(
+            `
+            SELECT e.id
+            FROM events e
+            JOIN users u ON e.organizer_id = u.id
+            WHERE e.id = ? AND u.id = ?
+            `,
+            [event_id, user.id]
+            );
+
+            if (!event.length) {
             return NextResponse.json(
                 {
-                    error: "Event not found",
-                    message: `Event with ID '${event_id}' does not exist`
+                error: "Event not found or not owned by user",
+                message: `Event ${event_id} not found for this user`,
                 },
                 { status: 404 }
             );
-        }
-
-        // Check if event exists for that user or user has that event
-
-      const [existingUserEvent] = await db.execute(
-        `SELECT * FROM users u JOIN events e ON u.id = e.organizer_id WHERE e.id = ? AND u.id = ?`,
-        [event_id, user.id]
-    );
-    if (existingUserEvent.length === 0) {
-        return NextResponse.json(
-            {
-                error: "Event does not exist for user",
-                message: `Event with ID '${event_id}' does not exist for user`
-            },
-            { status: 403 }
-        );
-    }
+            }
 
     // Fetch all values for a property related to an event for a paricular zone_event manager or general _event_manager.
 
@@ -123,7 +113,10 @@ export async function GET(req, {params}) {
 
     if (rows_.length === 0) {
         return NextResponse.json(
-            { error: `Values not found for Property ${property_id}, Event ${event_id}` }, 
+        {
+          error: "Values not found",
+          message: `No values found for property ${property_id} in event ${event_id}`,
+        }, 
             { status: 404 }
         );
         }

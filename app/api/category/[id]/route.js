@@ -137,7 +137,7 @@ export async function PATCH(req, { params }) {
             return NextResponse.json({ message: 'Bad request: missing category ID' }, { status: 400 });
         }
 
-        // SIMPLE WAY TO GET updateFields:
+        
         
         //  Get the data they sent
         const body = await req.json();
@@ -236,12 +236,12 @@ export async function PATCH(req, { params }) {
             );
         }
 
-        // Get updated zone
+        // Get updated category
         const [updatedCategory] = await db.execute(`SELECT * FROM categories WHERE id = ?`, [id]);
        
         return NextResponse.json({
             message: 'Category updated successfully',
-            zone: updatedCategory[0]
+            category: updatedCategory[0]
         }, { status: 200 });
        
     } catch (err) {

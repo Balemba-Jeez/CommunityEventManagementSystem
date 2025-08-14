@@ -23,7 +23,7 @@ export async function POST(req) {
       const token = authHeader?.split(" ")[1]; // Bearer <token>
     
       // Request Authentication
-      const auth = isAuthenticatedV2(token);
+      const auth = await isAuthenticatedV2(token, "password_reset");
       if (!auth.ok) return auth.response;
     
       const user = auth.user;
@@ -36,7 +36,7 @@ export async function POST(req) {
       [hashedPassword, user.userId]
     );
 
-    await markTokenUsed(user.jwtid);
+    await markTokenUsed(user.jti);
 
     return NextResponse.json({ message: "Password updated successfully" }, { status: 200 });
 

@@ -5,7 +5,7 @@ import { sendResetPasswordEmail } from "@/lib/mailer";
 import { NextResponse } from "next/server";
 import generateCode from "@/lib/security/generateCode";
 import getExpirationTime from "@/lib/security/generateCodeTimeFrame";
-
+import mailer from "@/lib/mail";
 
 export async function POST(req) {
   try {
@@ -37,7 +37,7 @@ export async function POST(req) {
     );
 
     // Send email with the plain code
-    await sendResetPasswordEmail(email, code);
+    await mailer.sendResetPasswordEmail(email, code);
 
     return NextResponse.json({ message: "If that email exists, a code was sent" });
   } catch (error) {
