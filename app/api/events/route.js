@@ -69,7 +69,7 @@ export async function GET(req){
 
       // Get general event data
       const [eventsData] = await db.execute(
-        `SELECT * FROM events WHERE id IN (${eventIds.map(() => "?").join(",")})`,
+        `SELECT * FROM events WHERE id IN (${eventIds.map(() => "?").join(",")}) ORDER BY updated_at DESC`,
         eventIds
       );
 
@@ -83,13 +83,37 @@ export async function GET(req){
       }
 
       // Merge general + category-specific
-      for (let ev of eventsData) {
-        fullEvents.push({
-          ...ev,
-          category_type: row.category_type,
-          category_properties: propertiesData
-        });
-      }
+        for (let ev of eventsData) {
+            let propertiesWithValues = [];
+
+            if (propertyIds.length > 0) {
+                // Get properties
+                const [propertiesData] = await db.execute(
+                `SELECT * FROM category_properties WHERE id IN (${propertyIds.map(() => "?").join(",")})`,
+                propertyIds
+                );
+
+                // Get all property_values for this event
+                const [valuesData] = await db.execute(
+                `SELECT * FROM property_values WHERE event_id = ? AND property_id IN (${propertyIds.map(() => "?").join(",")})`,
+                [ev.id, ...propertyIds]
+                );
+
+                // Map values to their property
+                propertiesWithValues = propertiesData.map(p => ({
+                ...p,
+                property_values: valuesData
+                    .filter(v => v.property_id === p.id)
+                    .map(v => ({ id: v.id, value: v.value }))
+                }));
+            }
+
+            fullEvents.push({
+                ...ev,
+                category_type: row.category_type,
+                category_properties: propertiesWithValues
+            });
+        }
     }
 
     return NextResponse.json({ events: fullEvents }, { status: 200 });
