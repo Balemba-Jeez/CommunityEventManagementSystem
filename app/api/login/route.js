@@ -1,6 +1,7 @@
 import db from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { generateTokenV2 } from '@/lib/security/token';
 
 const SECRET = process.env.JWT_SECRET;
 
@@ -9,7 +10,7 @@ export async function POST(req) {
   const { email, password} = body;
 
   try {
-    // 1. Fetch user by email
+    // Fetch user by email
     const [rows] = await db.execute(
       'SELECT id, name, email, password, image, zone_id, status FROM users WHERE email = ?',
       [email]
@@ -24,7 +25,7 @@ export async function POST(req) {
     const user = rows[0];
     console.log(user);
 
-    // 2. Compare password
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return new Response(JSON.stringify({ message: 'Invalid email or password' }), {
@@ -50,17 +51,27 @@ export async function POST(req) {
 
     console.log(userRoles);
 
-    // 3. Create JWT token
-    const token = jwt.sign(
-      {
+    const payload =       {
         id: user.id,
         email: user.email,
         role: userRoles,
         zone: user.zone_id
-      },
-      SECRET,
-      { expiresIn: '1d' }
-    );
+      }
+
+    // Create JWT token
+    // const token = jwt.sign(
+    //   {
+    //     id: user.id,
+    //     email: user.email,
+    //     role: userRoles,
+    //     zone: user.zone_id
+    //   },
+    //   SECRET,
+    //   { expiresIn: '1d' }
+    // );
+    //git add . && git commit -m "adding method to get events" && git push -u CEM backend
+
+    generateTokenV2("login", payload);
 
     // 4. Return token + basic user info
     return new Response(
