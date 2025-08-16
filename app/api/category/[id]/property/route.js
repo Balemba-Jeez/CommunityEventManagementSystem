@@ -1,5 +1,5 @@
 import db from "@/lib/db";
-import { isAuthenticated, isAuthorized } from "@/lib/security/auth";
+import { isAuthenticated, isAuthenticatedV2, isAuthorized } from "@/lib/security/auth";
 import { NextResponse } from "next/server";
 
 
@@ -12,7 +12,7 @@ export async function GET(req, {params}) {
       const token = authHeader?.split(" ")[1]; // Bearer <token>
     
       // Request Authentication
-      const auth = isAuthenticated(token);
+      const auth = await isAuthenticatedV2(token);
       if (!auth.ok) return auth.response;
     
       const user = auth.user;
@@ -24,17 +24,39 @@ export async function GET(req, {params}) {
       }
 
         // Await the params object first, then access the id
-        const { id } = await params;
+        const { id:category_id } = await params;
+
+        // Gneral venet manager can view the properties of any category
+        if (isAuthorized(user, ['general_event_manager'])) {
+            const [rows] = await db.execute(`SELECT *  FROM category_properties WHERE category_id = ?`, [category_id]);
+
+            if (rows.length === 0) {
+                    return NextResponse.json(
+                        { error: `No properties found for category ${category_id}` }, 
+                        { status: 404 }
+                    );
+                }
+            
+            // Return the Zone data
+            return NextResponse.json(
+                {
+                    message: 'Properties found successfully',
+                    properties: rows
+                },
+                
+                { status: 200 }
+                );
+        }
     
     
       console.log('About to execute database query');
             
       // Fetch properties for a particular category from database
-      const [rows] = await db.execute(`SELECT * FROM category_properties WHERE category_id = ?`, [id]);
+      const [rows] = await db.execute(`SELECT p.* FROM categories c JOIN category_properties p ON c.id = p.category_id WHERE c.id = ? AND c.user_id = ?`, [category_id, user.id]);
     
       if (rows.length === 0) {
         return NextResponse.json(
-            { error: `No properties found for category ${id}` }, 
+            { error: `No properties found for category ${category_id} or unauthorized` }, 
             { status: 404 }
         );
         }
@@ -54,7 +76,7 @@ export async function GET(req, {params}) {
         console.error('Error retrieving Zones:', err);
         console.error('Error stack:', err.stack);
         return NextResponse.json(
-            { error: 'Internal Server Error', details: err.message }, 
+            { error: 'Internal Server Error' }, 
             { status: 500 }
             );
         }     
