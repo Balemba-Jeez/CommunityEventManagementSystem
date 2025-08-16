@@ -1,5 +1,5 @@
 import db from "@/lib/db";
-import { isAuthenticated, isAuthorized } from "@/lib/security/auth";
+import { isAuthenticated, isAuthorized, isAuthenticatedV2 } from "@/lib/security/auth";
 import { NextResponse } from "next/server";
 
 
@@ -7,7 +7,7 @@ export async function GET(req) {
     try {
       const authHeader = req.headers.get("authorization");
       const token = authHeader?.split(" ")[1];
-      const auth = isAuthenticated(token);
+      const auth = await isAuthenticatedV2(token, "login");
       if (!auth.ok) return auth.response;
   
       const user = auth.user;
@@ -95,16 +95,18 @@ export async function POST(req) {
   try {
     const authHeader = req.headers.get("authorization");
     const token = authHeader?.split(" ")[1];
-    const auth = isAuthenticated(token);
+    const auth = await isAuthenticatedV2(token, "login");
     if (!auth.ok) return auth.response;
 
     const user = auth.user;
+
+    console.log('user', user)
 
     if (!isAuthorized(user, ['zone_event_manager', 'general_event_manager'])) {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
-    const { name, description = null, image_url = null, zone_id = null, parent_id = null } = await req.json();
+    const { name, description = null, image_url = null, parent_id = null } = await req.json();
 
     if (!name) {
       return NextResponse.json({ message: "Bad request: name is required" }, { status: 400 });
@@ -128,7 +130,7 @@ export async function POST(req) {
     // Insert
     const [result] = await db.execute(
       "INSERT INTO categories (name, description, image_url, user_id, zone_id, parent_id) VALUES (?, ?, ?, ?, ?, ?)",
-      [name, description, image_url, user.id, zone_id, parent_id]
+      [name, description, image_url, user.id, user.zone, parent_id]
     );
 
     return NextResponse.json({ message: "Category created successfully", categoryId: result.insertId }, { status: 201 });

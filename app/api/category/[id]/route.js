@@ -1,5 +1,5 @@
 import db from "@/lib/db";
-import { isAuthenticated, isAuthorized } from "@/lib/security/auth";
+import { isAuthenticated, isAuthorized, isAuthenticatedV2 } from "@/lib/security/auth";
 import { NextResponse } from "next/server";
 
 export async function GET(req, {params}) {
@@ -14,7 +14,7 @@ try {
   const token = authHeader?.split(" ")[1]; // Bearer <token>
 
   // Request Authentication
-  const auth = isAuthenticated(token);
+  const auth = await isAuthenticatedV2(token, "login");
   if (!auth.ok) return auth.response;
 
   const user = auth.user;
@@ -41,9 +41,9 @@ try {
     const user_id = url.searchParams.get('user_id');
 
     // General event manager wants to collect a particular category 
-    if (isAuthorized(user, ['general_event_manager']) && (zone || user_id)) {
+    if (isAuthorized(user, ['general_event_manager'])) {
 
-        let selectField = '';
+        let selectField = 'true';
         let values = [];
 
         if (zone || user_id) {
@@ -84,7 +84,7 @@ try {
 
   console.log('About to execute database query');
         
-  // Fetch all Category for a paricular zone_event manager or general _event_manager.
+  // Fetch a Category for a paricular zone_event manager or general _event_manager.
   const [rows] = await db.execute(`SELECT * FROM categories WHERE id = ? AND zone_id = ? AND  user_id = ?`, [id, user.zone, user.id]);
 
   if (rows.length === 0) {
@@ -125,7 +125,7 @@ export async function PATCH(req, { params }) {
         // Authentication & Authorization (same as DELETE)
         const authHeader = req.headers.get('authorization');
         const token = authHeader?.split(' ')[1];
-        const auth = isAuthenticated(token);
+        const auth = await isAuthenticatedV2(token, "login");
         if (!auth.ok) return auth.response;
         const user = auth.user;
         
@@ -262,7 +262,7 @@ export async function PUT(req, { params }) {
         const token = authHeader?.split(' ')[1]; // Bearer <token>
        
         // Authentication
-        const auth = isAuthenticated(token);
+        const auth = await isAuthenticatedV2(token);
         if (!auth.ok) {
             return auth.response; // 401 Unauthorized
         }
@@ -363,7 +363,7 @@ export async function DELETE(req, { params }) {
         const token = authHeader?.split(' ')[1]; // Bearer <token>
         
         // Authentication
-        const auth = isAuthenticated(token);
+        const auth = await isAuthenticatedV2(token);
         if (!auth.ok) {
             return auth.response; // 401 Unauthorized
         }
@@ -380,11 +380,29 @@ export async function DELETE(req, { params }) {
         // Validate id parameter
         if (!id) {
             return NextResponse.json(
-                { message: 'Bad request: missing user ID' }, 
+                { message: 'Bad request: missing category ID' }, 
                 { status: 400 }
             );
         }
         
+        // Gneral venet manager can delete any category
+        if (isAuthorized(user, ['general_event_manager'])) {
+            const [result] = await db.execute(`DELETE FROM categories WHERE id = ?`, [id]);
+
+            if (result.affectedRows === 0) {
+                return NextResponse.json(
+                    { error: `Category not found` }, 
+                    { status: 404 }
+                );
+            }
+        
+            return NextResponse.json(
+                { message: 'Category deleted successfully' },
+                { status: 200 }
+            );
+        }
+
+
         // Delete Category from database
         const [result] = await db.execute(`DELETE FROM categories WHERE id = ? AND user_id = ? AND zone_id = ?`, [id, user.id, user.zone]);
         

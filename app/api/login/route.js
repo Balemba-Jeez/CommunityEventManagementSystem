@@ -71,7 +71,7 @@ export async function POST(req) {
     // );
     //git add . && git commit -m "adding method to get events" && git push -u CEM backend
 
-    generateTokenV2("login", payload);
+    const token = await generateTokenV2("login", payload);
 
     // 4. Return token + basic user info
     return new Response(
