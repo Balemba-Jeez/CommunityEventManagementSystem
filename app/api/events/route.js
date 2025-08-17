@@ -1,5 +1,5 @@
 import db from "@/lib/db";
-import { isAuthenticated, isAuthorized } from "@/lib/security/auth";
+import { isAuthenticated, isAuthenticatedV2, isAuthorized } from "@/lib/security/auth";
 import { NextResponse } from "next/server";
 
 
@@ -10,7 +10,7 @@ export async function GET(req){
         const token = authHeader?.split(" ")[1]; // Bearer <token>
 
         // Request Authentication
-        const auth = isAuthenticated(token);
+        const auth = await isAuthenticatedV2(token);
         if (!auth.ok) return auth.response;
 
         const user = auth.user;
