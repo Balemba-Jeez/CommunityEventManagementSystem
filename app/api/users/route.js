@@ -7,7 +7,7 @@ export async function POST(req) {
   try {
 
     const body = await req.json();
-    const { name, email, password, image = null, zone_id = null, tel = '+237678189559' } = body;
+    const { name, email, password, zone_id = null, tel = '+237678189559' } = body;
 
      // Body Check
       if (!name || !email || !password || !tel) {
@@ -34,9 +34,9 @@ export async function POST(req) {
 
     // Insert new user
     const [user_result] = await db.execute(
-      `INSERT INTO users (name, email, password, image, zone_id, tel)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [name, email, hashedPassword, image, zone_id, tel]
+      `INSERT INTO users (name, email, password, zone_id, tel)
+       VALUES (?, ?, ?, ?, ?)`,
+      [name, email, hashedPassword, zone_id, tel]
     );
 
     console.log(user_result);

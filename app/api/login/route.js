@@ -12,7 +12,7 @@ export async function POST(req) {
   try {
     // Fetch user by email
     const [rows] = await db.execute(
-      'SELECT id, name, email, password, image, zone_id, status FROM users WHERE email = ?',
+      'SELECT id, name, email, password, image, zone_id, status, is_verified FROM users WHERE email = ?',
       [email]
     );
 
@@ -23,7 +23,7 @@ export async function POST(req) {
     }
 
     const user = rows[0];
-    console.log(user);
+    console.log(user, !user.is_verified);
 
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
@@ -32,6 +32,12 @@ export async function POST(req) {
         status: 401,
       });
     }
+
+    if (!user.is_verified) {
+        return new Response(JSON.stringify({ message: 'Account not verified' }), {
+          status: 401,
+        });
+      }    
 
     if (user.status !== 'active') {
         return new Response(JSON.stringify({ message: 'Account not active' }), {

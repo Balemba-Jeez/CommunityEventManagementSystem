@@ -12,7 +12,7 @@ export async function POST(req) {
     const { email } = await req.json();
 
     // Find user by email
-    const [users] = await db.execute("SELECT id FROM users WHERE email = ?", [email]);
+    const [users] = await db.execute("SELECT id FROM users WHERE email = ? AND is_verified = TRUE AND status NOT IN ('pending','blocked','deleted')", [email]);
     if (users.length === 0) {
       // respond with same message to avoid leaking info
       return NextResponse.json({ message: "If that email exists, a code was sent" });
@@ -23,7 +23,7 @@ export async function POST(req) {
     // Generate 6-digit code
     const code = generateCode("password_reset");
 
-    console.log(code)
+    console.log(code);
 
     // Hash the code before saving
     const hashedCode = await bcrypt.hash(code, 10);
