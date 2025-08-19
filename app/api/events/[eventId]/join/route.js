@@ -4,53 +4,55 @@ import { NextResponse } from 'next/server';
 import { getEventStatus } from '@/lib/utils/events';
 
 
-// Create particpation (Join event) 
+// --- JOIN / REJOIN ---
 export async function POST(req, { params }) {
   try {
     const { eventId } = params;
+
+    // Authentication
     const authHeader = req.headers.get('authorization');
     const token = authHeader?.split(' ')[1];
     const auth = await isAuthenticatedV2(token);
     if (!auth.ok) return auth.response;
     const user = auth.user;
 
+    // Authorization
     if (!isAuthorizedV2(user, ['member'])) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
-    // Fetch event
-    const [rows] = await db.execute(
-      'SELECT id, start_time, end_time FROM events WHERE id = ?',
-      [eventId]
-    );
-    if (rows.length === 0) {
+    // Event status
+    const status = await getEventStatus(eventId);
+    if (!status) {
       return NextResponse.json({ message: 'Event not found' }, { status: 404 });
     }
+    if (status === 'past') {
+      return NextResponse.json({ message: 'Cannot join past event' }, { status: 400 });
+    }
 
-    const event = rows[0];
-    const eventStatus = getEventStatus(event.start_time, event.end_time);
+    // Transition
+    const participationStatus = status === 'future' ? 'confirmed' : 'attended';
 
-    let newStatus;
-    if (eventStatus === 'future') newStatus = 'confirmed';
-    else if (eventStatus === 'ongoing') newStatus = 'attended';
-    else return NextResponse.json({ message: 'Cannot join past event' }, { status: 400 });
-
+    // Upsert participation
     await db.execute(
-      `INSERT INTO participations (user_id, event_id, status) 
-       VALUES (?, ?, ?) 
-       ON DUPLICATE KEY UPDATE status=?`,
-      [user.id, eventId, newStatus, newStatus]
+      `INSERT INTO participations (user_id, event_id, status)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE status = VALUES(status)`,
+      [user.id, eventId, participationStatus]
     );
 
-    return NextResponse.json({ message: `Participation ${newStatus}` }, { status: 201 });
+    return NextResponse.json(
+      { message: `Participation ${participationStatus}` },
+      { status: 201 }
+    );
+
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
 
-
-// Cancel participation (Leave event)
+// --- CANCEL / LEAVE ---
 export async function DELETE(req, { params }) {
   try {
     const { eventId } = params;
@@ -67,39 +69,36 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
-    // Fetch event
-    const [rows] = await db.execute(
-      'SELECT id, start_time, end_time FROM events WHERE id = ?',
-      [eventId]
-    );
-    if (rows.length === 0) {
+    // Event status
+    const status = await getEventStatus(eventId);
+    if (!status) {
       return NextResponse.json({ message: 'Event not found' }, { status: 404 });
     }
+    if (status === 'past') {
+      return NextResponse.json({ message: 'Cannot cancel past event' }, { status: 400 });
+    }
 
-    const event = rows[0];
-    const eventStatus = getEventStatus(event.start_time, event.end_time);
+    // Transition
+    const participationStatus = status === 'future' ? 'cancelled' : 'left';
 
-    let newStatus;
-    if (eventStatus === 'future') newStatus = 'cancelled';
-    else if (eventStatus === 'ongoing') newStatus = 'left';
-    else return NextResponse.json({ message: 'Cannot cancel past event' }, { status: 400 });
-
-    // Update participation
     const [result] = await db.execute(
-      `UPDATE participations SET status=? WHERE user_id=? AND event_id=?`,
-      [newStatus, user.id, eventId]
+      `UPDATE participations 
+       SET status=? 
+       WHERE user_id=? AND event_id=?`,
+      [participationStatus, user.id, eventId]
     );
 
     if (result.affectedRows === 0) {
       return NextResponse.json({ message: 'Participation not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ message: `Participation ${newStatus}` }, { status: 200 });
+    return NextResponse.json(
+      { message: `Participation ${participationStatus}` },
+      { status: 200 }
+    );
 
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
-
-
