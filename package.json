@@ -2,13 +2,14 @@
   "name": "backend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "cron": "node lib/cron.js",
+    "cron": "node lib/utils/cron.js",
     "commit": "git add . && git commit -m",
-    "push": "git push -u origin main"
+    "push": "git push -u CEM backend"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
@@ -22,6 +23,7 @@
     "next": "15.4.1",
     "next-auth": "^5.0.0-beta.29",
     "node-cron": "^4.2.1",
+    "node-media-server": "^4.0.21",
     "nodemailer": "^6.10.1",
     "prism": "^4.1.2",
     "prisma": "^6.12.0",
