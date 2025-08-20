@@ -9,7 +9,8 @@
     "start": "next start",
     "cron": "node lib/utils/cron.js",
     "commit": "git add . && git commit -m",
-    "push": "git push -u CEM backend"
+    "push": "git push -u CEM backend",
+    "stream-server": "node lib/media-server.js"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
