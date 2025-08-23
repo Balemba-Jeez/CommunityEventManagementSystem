@@ -1,7 +1,7 @@
 import db from "@/lib/db";
-import { isAuthenticated, isAuthenticatedV2, isAuthorized } from "@/lib/security/auth";
+import { isAuthenticated, isAuthenticatedV2, isAuthorized, isAuthorizedV2 } from "@/lib/security/auth";
 import { NextResponse } from "next/server";
-
+import { sendSMS } from "@/lib/notification-channels/sms";
 
 export async function GET(req){
     try {
@@ -134,13 +134,13 @@ export async function POST(req) {
         const token = authHeader?.split(" ")[1]; // Bearer <token>
 
         // Request Authentication
-        const auth = isAuthenticated(token);
+        const auth = isAuthenticatedV2(token);
         if (!auth.ok) return auth.response;
 
         const user = auth.user;
 
         // Request Authorization
-        if (!isAuthorized(user, ['zone_event_manager', 'general_event_manager'])) {
+        if (!isAuthorizedV2(user, ['zone_event_manager', 'general_event_manager'])) {
             return NextResponse.json({ message: "Forbidden" }, { status: 403 });
         }
 
@@ -202,6 +202,24 @@ export async function POST(req) {
             ]
         );
 
+        // const [events] = await db.execute(
+        //     `SELECT * FROM events WHERE id = ?`,
+        //     [result.insertId]
+        // );
+
+        // message = `New Event: ${events[0].title}\nDate: ${events[0].date.toLocaleString()}\nDetails: ${events[0].description}`;
+
+        // // Get all users which are in thesame zone as the organizer
+        // const [usersToNotify] = await db.execute(
+        //     `SELECT * FROM users WHERE zone_id = ?`,
+        //     [user.zone]
+        // );
+
+        //  // Notify all users via SMS (offline users)
+        // for (const user of usersToNotify) {
+        // await sendSMS(user.tel, message);
+        // }
+        
         return NextResponse.json(
             { 
                 message: "Event created successfully", 

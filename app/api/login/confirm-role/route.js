@@ -19,6 +19,12 @@ export async function POST(req) {
       role,
       zone: user.zone
     });
+    console.log("autheticatedUser:", {
+      id: user.id,
+      email: user.email,
+      role,
+      zone: user.zone
+    })
 
     return Response.json({
       message: "Role confirmed. Login successful.",
