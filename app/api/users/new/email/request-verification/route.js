@@ -1,5 +1,4 @@
 import db from '@/lib/db';
-import { sendVerificationEmail } from '@/lib/mailer';
 import generateCode from "@/lib/security/generateCode";
 import getExpirationTime from '@/lib/security/generateCodeTimeFrame';
 import mailer from "@/lib/mail";
@@ -12,10 +11,17 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'Email is required' }), { status: 400 });
     }
 
-    // Check if user already exists
-    const [existingUsers] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
-    if (existingUsers.length > 0) {
-      return new Response(JSON.stringify({ error: 'Email is already registered' }), { status: 409 });
+    // Check if a verified user already exists
+    const [verifiedUsers] = await db.execute(
+      'SELECT id FROM users WHERE email = ? AND is_verified = 1',
+      [email]
+    );
+
+    if (verifiedUsers.length > 0) {
+      return new Response(
+        JSON.stringify({ error: 'Email is already registered and verified' }),
+        { status: 409 }
+      );
     }
 
     // Generate email verification code
@@ -31,7 +37,7 @@ export async function POST(req) {
     );
 
     // Send verification email
-    await mailer.sendVerificationEmail(email, code, );
+    await mailer.sendVerificationEmail(email, code, 1);
 
     return new Response(JSON.stringify({ message: 'Code sent successfully', expire_min: 60 }), { status: 200 });
 
