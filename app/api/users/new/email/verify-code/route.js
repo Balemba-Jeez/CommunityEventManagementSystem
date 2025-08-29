@@ -12,9 +12,13 @@ export async function POST(req) {
       );
     }
 
-    // Look up the verification record
+    // Look up the latest unused verification record
     const [rows] = await db.execute(
-      `SELECT id, code, expires_at FROM email_verifications WHERE email = ? ORDER BY expires_at DESC LIMIT 1`,
+      `SELECT id, code, expires_at 
+       FROM email_verifications 
+       WHERE email = ? AND used = 0 
+       ORDER BY expires_at DESC 
+       LIMIT 1`,
       [email]
     );
 
@@ -27,8 +31,7 @@ export async function POST(req) {
 
     const verification = rows[0];
 
-    // Check code and expiration
-    const now = new Date();
+    // Check code match
     if (verification.code !== code) {
       return new Response(
         JSON.stringify({ error: 'Invalid verification code' }),
@@ -36,6 +39,8 @@ export async function POST(req) {
       );
     }
 
+    // Check expiration
+    const now = new Date();
     if (now > new Date(verification.expires_at)) {
       return new Response(
         JSON.stringify({ error: 'Verification code has expired' }),
@@ -43,16 +48,16 @@ export async function POST(req) {
       );
     }
 
-    // Update user status to verified
+    // Mark code as used (keep for audit instead of deleting)
     await db.execute(
-      `UPDATE users SET is_verified = TRUE' WHERE email = ?`,
-      [email]
+      `UPDATE email_verifications SET used = 1 WHERE id = ?`,
+      [verification.id]
     );
 
-    
+    // Update user status to verified
     await db.execute(
-      `DELETE FROM email_verifications WHERE id = ?`,
-      [verification.id]
+      `UPDATE users SET is_verified = TRUE WHERE email = ?`,
+      [email]
     );
 
     return new Response(

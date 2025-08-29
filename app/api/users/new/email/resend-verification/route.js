@@ -26,7 +26,7 @@ export async function POST(req) {
 
     // Insert new verification code
     await db.query(
-      "INSERT INTO email_verifications (email, code, expires_at, used) VALUES (?, ?, ?, 0)",
+      "INSERT INTO email_verifications (email, code, expires_at) VALUES (?, ?, ?)",
       [email, code, expiresAt]
     );
 
