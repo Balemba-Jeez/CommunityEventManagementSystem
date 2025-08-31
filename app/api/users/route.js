@@ -63,16 +63,34 @@ export async function POST(req) {
       channelMap[ch.name] = ch.id;
     });
 
-    //  Insert user opt-ins
-    for (const channelName of Object.keys(opt_ins)) {
-      if (opt_ins[channelName] && channelMap[channelName]) {
-        await db.execute(
-          `INSERT INTO user_notification_channels (user_id, channel_id, preferences)
-           VALUES (?, ?, ?)`,
-          [userId, channelMap[channelName], 'active', JSON.stringify({})]
-        );
+
+  // Insert user opt-ins
+  for (const channelName of Object.keys(opt_ins)) {
+    if (opt_ins[channelName] && channelMap[channelName]) {
+      let address = null;
+
+      switch (channelName) {
+        case "email":
+          address = email;
+          break;
+        case "sms":
+          address = formattedTel;
+          break;
+        case "whatsapp":
+          address = body.whatsapp_number || null;
+          break;
+        default:
+          address = null;
       }
+
+      await db.execute(
+        `INSERT INTO user_notification_channels (user_id, channel_id, address, preferences)
+        VALUES (?, ?, ?, ?)`,
+        [userId, channelMap[channelName], address, JSON.stringify({})]
+      );
     }
+  }
+
 
     return NextResponse.json(
       { message: 'User created Successfully', userId },

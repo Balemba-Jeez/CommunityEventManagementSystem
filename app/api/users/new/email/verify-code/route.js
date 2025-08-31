@@ -12,63 +12,72 @@ export async function POST(req) {
       );
     }
 
-    // Look up the latest unused verification record
-    const [rows] = await db.execute(
-      `SELECT id, code, expires_at 
-       FROM email_verifications 
-       WHERE email = ? AND used = 0 
-       ORDER BY expires_at DESC 
-       LIMIT 1`,
-      [email]
+    // Look up verification record
+    const [rows] = await db.query(
+      `SELECT * FROM email_verifications
+       WHERE email = ? AND code = ? AND used = 0
+       ORDER BY created_at DESC LIMIT 1`,
+      [email, code]
     );
 
     if (rows.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'No verification request found for this email' }),
-        { status: 404 }
+        JSON.stringify({ error: 'Invalid or expired code' }),
+        { status: 400 }
       );
     }
 
     const verification = rows[0];
 
-    // Check code match
-    if (verification.code !== code) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid verification code' }),
-        { status: 400 }
-      );
-    }
-
-    // Check expiration
-    const now = new Date();
-    if (now > new Date(verification.expires_at)) {
-      return new Response(
-        JSON.stringify({ error: 'Verification code has expired' }),
-        { status: 400 }
-      );
-    }
-
-    // Mark code as used (keep for audit instead of deleting)
-    await db.execute(
+    // Mark verification as used
+    await db.query(
       `UPDATE email_verifications SET used = 1 WHERE id = ?`,
       [verification.id]
     );
 
-    // Update user status to verified
+    // Update user table (email verified)
+    await db.query(
+      `UPDATE users SET is_verified = 1 WHERE email = ?`,
+      [email]
+    );
+
+    // // Checks if user opted in for email
+    // const [channel] = await db.execute(
+    //   `SELECT id FROM user_notification_channels WHERE user_id = ? AND channel_id = (SELECT id FROM channels WHERE name = 'email')`,
+    //   [userId]
+    // );
+
+    // if (channel.length === 0) {
+    //   return NextResponse.json({ error: 'User has not opted in for Email' }, { status: 400 });
+    // }
+
+
+    // Inherit verification for notification channel (email)
+    // await db.query(
+    //   `UPDATE user_notification_channels
+    //    SET is_verified = 1
+    //    WHERE channel_type = 'email'
+    //      AND channel_value = ?
+    //      AND user_id = (SELECT id FROM users WHERE email = ?)`,
+    //   [email, email]
+    // );
+
+
+    // Update user_notification_channel to verified if it exists
     await db.execute(
-      `UPDATE users SET is_verified = TRUE WHERE email = ?`,
+      `UPDATE user_notification_channels SET verification_status='verified', is_active=1 WHERE address=? AND channel_id=(SELECT id FROM notification_channels WHERE name='email')`,
       [email]
     );
 
     return new Response(
-      JSON.stringify({ message: 'Account verified successfully' }),
+      JSON.stringify({ success: true, message: 'Email verified successfully' }),
       { status: 200 }
     );
 
-  } catch (err) {
-    console.error('Error verifying email:', err);
+  } catch (error) {
+    console.error('Verification error:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal Server Error' }),
+      JSON.stringify({ error: 'Server error' }),
       { status: 500 }
     );
   }
