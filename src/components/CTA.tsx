@@ -30,14 +30,14 @@ const CTA = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="cta-primary text-lg px-8 py-6 rounded-xl">
-              <ArrowRight className="mr-2 h-5 w-5" />
-              <Link
-                to="/create-account"
-                className="inline-flex items-center justify-center rounded-lg bg-royal-blue text-pure-white hover:bg-royal-blue/90 font-button font-semibold h-12 px-6 py-3 text-base transition-colors focus:outline-none focus:ring-2 focus:ring-royal-blue focus:ring-offset-2"
-              ></Link>
-              Join the Community
+            
+            <Button asChild size="lg" className="cta-primary text-lg px-8 py-6 rounded-xl">
+              <Link to ="/create-account">
+                <ArrowRight className="mr-2 h-5 w-5" />
+                Join the Community
+              </Link>
             </Button>
+            
             <Button size="lg" variant="outline" className="cta-secondary text-lg px-8 py-6 rounded-xl">
               <Calendar className="mr-2 h-5 w-5" />
               See Upcoming Events

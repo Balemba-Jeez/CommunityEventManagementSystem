@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import DropDownMenu from "@/components/dropdown";
+import { Link } from "react-router-dom";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -39,7 +40,9 @@ const Navigation = () => {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4 ml-auto">
             <Button variant="ghost" size="sm">Login</Button>
-            <Button className="cta-primary" size="sm">Join Community</Button>
+            <Button className="cta-primary" size="sm">
+              <Link to ="/create-account">Join Community</Link>
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -64,7 +67,10 @@ const Navigation = () => {
                 Events
               </a>
               <Button variant="ghost" size="sm" className="justify-start">Login</Button>
-              <Button className="cta-primary" size="sm">Join Community</Button>
+              
+              <Button className="cta-primary" size="sm">
+                <Link to ="/create-account">Join Community</Link>
+              </Button>
             </div>
           </div>
         )}

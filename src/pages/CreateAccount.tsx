@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Header } from "@/components/ui/Header";
-import { ProgressFlow } from "@/components/ui/ProgressFlow";
-import { FormField } from "@/components/ui/FormField";
-import { CheckboxGroup } from "@/components/ui/CheckboxGroup";
-import { TermsCheckbox } from "@/components/ui/TermsCheckbox";
-import { CTAButton } from "@/components/ui/CTAButton";
+import { Header } from "../components/ui/Header";
+import { ProgressFlow } from "../components/ui/ProgressFlow";
+import { FormField } from "../components/ui/FormField";
+import { CheckboxGroup } from "../components/ui/CheckboxGroup";
+import { TermsCheckbox } from "../components/ui/TermsCheckbox";
+import { CTAButton } from "../components/ui/CTAButton";
 
 const CreateAccount = () => {
   const [formData, setFormData] = useState({

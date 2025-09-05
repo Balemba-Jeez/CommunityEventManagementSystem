@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar } from "lucide-react";
 import heroImage from "@/assets/discover event.jpg";
+import { Link } from "react-router-dom"
 
 const Hero = () => {
   return (
@@ -23,10 +24,14 @@ const Hero = () => {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
+              <Link to ="/create-account">
               <Button size="lg" className="cta-primary text-lg px-8 py-6 rounded-xl">
+              
                 <ArrowRight className="mr-2 h-5 w-5" />
                 Join the Community
+              
               </Button>
+              </Link>
               <Button size="lg" variant="outline" className="cta-secondary text-lg px-8 py-6 rounded-xl">
                 <Calendar className="mr-2 h-5 w-5" />
                 See Upcoming Events
