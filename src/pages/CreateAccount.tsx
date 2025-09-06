@@ -23,12 +23,12 @@ const CreateAccount = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
-  const steps = [
-    { id: "create", title: "Create Account", isActive: true, isCompleted: false },
-    { id: "verify-email", title: "Verify Email", isActive: false, isCompleted: false },
-    { id: "verify-phone", title: "Verify Phone", isActive: false, isCompleted: false },
-    { id: "done", title: "Done", isActive: false, isCompleted: false },
-  ];
+  // const steps = [
+  //   { id: "create", title: "Create Account", isActive: true, isCompleted: false },
+  //   { id: "verify-email", title: "Verify Email", isActive: false, isCompleted: false },
+  //   { id: "verify-phone", title: "Verify Phone", isActive: false, isCompleted: false },
+  //   { id: "done", title: "Done", isActive: false, isCompleted: false },
+  // ];
 
   const notificationOptions = [
     {
@@ -57,32 +57,85 @@ const CreateAccount = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
+    // Full Name
     if (!formData.fullName.trim()) {
       newErrors.fullName = "Full name is required";
     }
 
+    // Email
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
+    } else {
+      const email = formData.email.trim();
+
+      if (!email.includes("@")) {
+        newErrors.email = "Email must contain '@'";
+      } else {
+        const [local, domain] = email.split("@");
+
+        if (!local) {
+          newErrors.email = "Email must have text before '@'";
+        } else if (!domain) {
+          newErrors.email = "Email must have a domain after '@'";
+        } else if (!domain.includes(".")) {
+          newErrors.email = "Email domain must contain a '.' (example.com)";
+        } else if (domain.startsWith(".")) {
+          newErrors.email = "Domain cannot start with '.'";
+        } else {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(email)) {
+            newErrors.email = "Enter a valid email format (e.g. name@example.com)";
+          }
+        }
+      }
     }
 
+    // Phone
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
+    } else {
+      const phone = formData.phone.trim();
+
+      // Cameroon phone regex
+      const cameroonPhoneRegex = /^(?:\+237|237)?(6[2-9]\d{7})$/;
+
+      if (!/^\+?\d+$/.test(phone)) {
+        newErrors.phone = "Phone number must contain only digits (and optional +)";
+      } else if (!(phone.startsWith("6") || phone.startsWith("+237") || phone.startsWith("237"))) {
+        newErrors.phone = "Phone number must start with 6 (or +237 / 237)";
+      } else if (!cameroonPhoneRegex.test(phone)) {
+        if (phone.length < 9) {
+          newErrors.phone = "Phone number is too short (must be 9 digits)";
+        } else if (phone.length > 12) {
+          newErrors.phone = "Phone number is too long";
+        } else {
+          newErrors.phone = "Invalid Cameroon phone format";
+        }
+      }
     }
 
+    // Password
     if (!formData.password) {
       newErrors.password = "Password is required";
     } else if (formData.password.length < 8) {
       newErrors.password = "Password must be at least 8 characters";
+    } else {
+      // enforce at least 1 uppercase, 1 lowercase, 1 digit
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
+      if (!passwordRegex.test(formData.password)) {
+        newErrors.password =
+          "Password must contain uppercase, lowercase, and a number";
+      }
     }
 
+    // Confirm Password
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords don't match";
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
+    // Terms & Privacy
     if (!formData.termsAccepted) {
       newErrors.terms = "You must agree to the Terms and Privacy Policy";
     }
@@ -90,8 +143,9 @@ const CreateAccount = () => {
     return newErrors;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log('form submitted')
     
     const validationErrors = validateForm();
     setErrors(validationErrors);
@@ -109,20 +163,22 @@ const CreateAccount = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <ProgressFlow steps={steps} />
-      
+      <Header currentStep={1}/>
+
       <main className="py-12 px-6">
         <div className="max-w-md mx-auto">
-          {/* Hero Text */}
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-heading font-semibold text-charcoal leading-tight">
-              Join Thousands of PC's in growing together with Community Events.
-            </h1>
-          </div>
+        {/* Hero Text */}
+        <div className="text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-foreground mb-3">
+            Join Thousands of PC's
+          </h2>
+          <p className="text-lg font-inter text-[#7F8C8D]">
+            in growing together with Community Events.
+          </p>
+        </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             <FormField
               placeholder="Full Name"
               value={formData.fullName}
@@ -150,7 +206,7 @@ const CreateAccount = () => {
                 setFormData((prev) => ({ ...prev, phone: e.target.value }))
               }
               error={errors.phone}
-              required
+              
             />
 
             <FormField
@@ -200,12 +256,12 @@ const CreateAccount = () => {
             </CTAButton>
 
             {/* Sign In Link */}
-            <div className="text-center pt-4">
+            <div className="text-left pt-4">
               <p className="text-sm font-body text-secondary-gray">
                 Already have a PC Community account?{" "}
                 <Link
                   to="/signin"
-                  className="text-royal-blue hover:underline font-medium"
+                  className="text-primary hover:underline font-medium"
                 >
                   Sign in
                 </Link>

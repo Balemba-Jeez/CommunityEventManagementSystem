@@ -7,13 +7,15 @@ export interface FormFieldProps
 }
 
 const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
-  ({ className, type, error, ...props }, ref) => {
+  ({ className, type, error, value, onChange, ...props }, ref) => {
     return (
       <div className="space-y-1">
         <input
           type={type}
+          value={value}
+          onChange={onChange}   // ✅ explicitly forward
           className={cn(
-            "flex h-12 w-full rounded-lg border border-border bg-input px-4 py-3 text-base font-body text-charcoal placeholder:text-secondary-gray focus:outline-none focus:ring-2 focus:ring-royal-blue focus:border-transparent transition-colors",
+            "flex h-12 w-full rounded-lg border border-border bg-input px-4 py-3 text-base font-body text-foreground placeholder:text-secondary-gray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors",
             error && "border-destructive focus:ring-destructive",
             className
           )}

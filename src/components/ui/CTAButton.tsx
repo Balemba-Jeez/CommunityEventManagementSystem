@@ -12,14 +12,15 @@ const CTAButton = forwardRef<HTMLButtonElement, CTAButtonProps>(
   ({ className, variant = "primary", size = "default", loading, children, disabled, ...props }, ref) => {
     return (
       <button
+        type={props.type}
         className={cn(
           // Base styles
-          "inline-flex items-center justify-center rounded-lg font-button font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-royal-blue focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
+          "inline-flex items-center justify-center rounded-lg font-button font-semibold transition-colors  disabled:opacity-50 disabled:pointer-events-none",
           
           // Variants
           {
-            "bg-royal-blue text-pure-white hover:bg-royal-blue/90 active:bg-royal-blue/95": variant === "primary",
-            "bg-neutral-bg text-charcoal hover:bg-border active:bg-border/80": variant === "secondary",
+            "bg-primary text-background hover:bg-primary/90 active:bg-primary/95": variant === "primary",
+            "bg-muted text-foreground hover:bg-border active:bg-border/80": variant === "secondary",
           },
           
           // Sizes

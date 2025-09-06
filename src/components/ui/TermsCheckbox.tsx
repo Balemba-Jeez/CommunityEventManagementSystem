@@ -24,14 +24,14 @@ export const TermsCheckbox = ({ id, checked, onChange, error }: TermsCheckboxPro
           I agree to the{" "}
           <a
             href="/terms"
-            className="text-royal-blue hover:underline font-medium"
+            className="text-primary hover:underline font-medium"
           >
             PC Community | Events Terms
           </a>
           . Learn about how we use and protect your data in our{" "}
           <a
             href="/privacy"
-            className="text-royal-blue hover:underline font-medium"
+            className="text-primary hover:underline font-medium"
           >
             Privacy Policy
           </a>

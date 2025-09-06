@@ -17,7 +17,7 @@ export const CheckboxGroup = ({ title, options, className }: CheckboxGroupProps)
   return (
     <div className={className}>
       {title && (
-        <h3 className="text-base font-body font-medium text-charcoal mb-4">
+        <h3 className="text-base font-body font-medium text-foreground mb-4">
           {title}
         </h3>
       )}
@@ -32,7 +32,7 @@ export const CheckboxGroup = ({ title, options, className }: CheckboxGroupProps)
             />
             <label
               htmlFor={option.id}
-              className="text-sm font-body text-charcoal leading-5 cursor-pointer"
+              className="text-sm font-body text-foreground leading-5 cursor-pointer"
             >
               {option.label}
             </label>
