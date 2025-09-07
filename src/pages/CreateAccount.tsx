@@ -6,6 +6,8 @@ import { FormField } from "../components/ui/FormField";
 import { CheckboxGroup } from "../components/ui/CheckboxGroup";
 import { TermsCheckbox } from "../components/ui/TermsCheckbox";
 import { CTAButton } from "../components/ui/CTAButton";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const CreateAccount = () => {
   const [formData, setFormData] = useState({
@@ -22,6 +24,7 @@ const CreateAccount = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // const steps = [
   //   { id: "create", title: "Create Account", isActive: true, isCompleted: false },
@@ -143,21 +146,72 @@ const CreateAccount = () => {
     return newErrors;
   };
 
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('form submitted')
-    
+    console.log("form submitted");
+
     const validationErrors = validateForm();
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
       setLoading(true);
-      // Simulate API call
-      setTimeout(() => {
+
+      try {
+        // Build opt-ins object
+        const optIns = {
+          email: formData.emailNotifications,
+          sms: formData.smsNotifications,
+          whatsapp: formData.whatsappNotifications,
+        };
+
+        // Prepare payload
+        const payload = {
+          name: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          tel: formData.phone,
+          opt_ins: optIns,
+        };
+
+        console.log("Sending payload:", payload);
+
+        // Create user
+        const response = await axios.post("http://localhost:3000/api/users", payload);
+
+        console.log("API response:", response.data);
+
+        const { userId:id } = response.data;
+
+        // Save only safe info in localStorage
+        const { email, phone, fullName } = formData;
+        localStorage.setItem(
+          "userSignupData",
+          JSON.stringify({ email, phone, fullName, whatsapp: formData.whatsappNotifications, id })
+        );
+        console.log('localstorage set userinfo', localStorage.getItem("userSignupData"));
+
+        // Request email verification code
+        const verificationRes = await axios.post(
+          "http://localhost:3000/api/users/new/email/request-verification",
+          { email: formData.email }
+        );
+
+        if (verificationRes.status === 200) {
+          console.log("Verification code requested successfully");
+          // 4. Navigate only if verification succeeded
+          navigate("/verify-email");
+        } else {
+          throw new Error("Failed to request email verification code");
+        }
+
+
+      } catch (error: any) {
+        console.error("Registration failed:", error);
+        setErrors({ api: "Failed to create account. Please try again." });
+      } finally {
         setLoading(false);
-        // Navigate to email verification step
-        console.log("Account creation submitted:", formData);
-      }, 2000);
+      }
     }
   };
 

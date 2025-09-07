@@ -5,6 +5,8 @@ import { CTAButton } from "@/components/ui/CTAButton";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle } from "lucide-react";
+import axios from "axios";
+
 
 const VerifyEmail = () => {
   const [otp, setOtp] = useState("");
@@ -12,11 +14,26 @@ const VerifyEmail = () => {
   const [resendLoading, setResendLoading] = useState(false);
   const [codeResent, setCodeResent] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const [userEmail, setUserEmail] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Demo email - in a real app this would come from router state or API
-  const userEmail = "jessy@gmail.com";
+    useEffect(() => {
+        const storedUser = localStorage.getItem("userSignupData");
+        if (storedUser) {
+            const { email } = JSON.parse(storedUser);
+            if (email) {
+            setUserEmail(email);
+            return; // ✅ don't redirect
+            }
+        }
+
+        // If no email in storage, redirect
+        navigate("/create-account");
+
+    }, [navigate]);
+
+    
 
   // Resend timer countdown
   useEffect(() => {
@@ -26,55 +43,102 @@ const VerifyEmail = () => {
     }
   }, [resendTimer]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (otp.length !== 6) {
-      toast({
-        title: "Invalid Code",
-        description: "Please enter the complete 6-digit verification code.",
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (otp.length !== 8) {
+    toast({
+      title: "Invalid Code",
+      description: "Please enter the complete 6-digit verification code.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    // Verify the email code
+    const response = await axios.post("http://localhost:3000/api/users/new/email/verify-code", {
+      email: userEmail,
+      code: otp,
+    });
+
+
+
+    // Request phone verification code immediately after email success
+        const storedUser = localStorage.getItem("userSignupData");
+        if (!storedUser) throw new Error("User info not found in localStorage");
+
+        const { phone, id } = JSON.parse(storedUser);
+
+        const phoneRes = await axios.post(
+            "http://localhost:3000/api/users/new/phone/request-verification",
+            {
+                userId: id,
+                phone,
+            }
+        );
+
+        if (phoneRes.status === 200 && response.status === 200) {
+            console.log("Phone verification code sent successfully");
+
+                toast({
+                  title: "Email Verified!",
+                  description: response.data.message,
+                });
+
+            // ✅ Navigate only after phone request success
+            navigate("/verify-phone");
+        } else {
+            throw new Error("Failed to request phone verification code");
+        }
+    } catch (error: any) {
+        console.error("Verification failed:", error);
+        toast({
+        title: "Verification failed",
+        description:
+            error?.response?.data?.error ||
+            error.message ||
+            "Invalid code or server error",
         variant: "destructive",
-      });
-      return;
+        });
+    } finally {
+        setLoading(false);
     }
+    };
 
-    setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      
-      // Demo: Accept any 6-digit code for verification
-      toast({
-        title: "Email Verified!",
-        description: "Your email has been successfully verified.",
-      });
-      
-      // Navigate to next step
-      navigate("/verify-phone");
-    }, 2000);
-  };
 
-  const handleResendCode = async () => {
-    if (resendTimer > 0) return;
-    
-    setResendLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setResendLoading(false);
-      setCodeResent(true);
-      setResendTimer(24); // 24 seconds as shown in design
-      
-      toast({
-        title: "Code Sent",
-        description: "A new verification code has been sent to your email.",
-      });
-      
-      // Hide the "Code resent!" message after 3 seconds
-      setTimeout(() => setCodeResent(false), 3000);
-    }, 1000);
-  };
+const handleResendCode = async () => {
+  if (resendTimer > 0) return;
+
+  setResendLoading(true);
+
+  try {
+    await axios.post("http://localhost:3000/api/users/new/email/resend-verification", {
+      email: userEmail,
+    });
+
+    setResendLoading(false);
+    setCodeResent(true);
+    setResendTimer(24);
+
+    toast({
+      title: "Code Sent",
+      description: "A new verification code has been sent to your email.",
+    });
+
+    setTimeout(() => setCodeResent(false), 3000);
+  } catch (error: any) {
+    setResendLoading(false);
+    toast({
+      title: "Failed to resend",
+      description: error?.response?.data?.error || "Something went wrong",
+      variant: "destructive",
+    });
+  }
+};
+
 
   const handleCancel = () => {
     navigate("/");
@@ -93,7 +157,7 @@ const VerifyEmail = () => {
               Check your inbox
             </h1>
             <p className="text-base font-body text-secondary-gray">
-              Enter the 6-digit code we sent to{" "}
+              Enter the 8-digit code we sent to{" "}
               <span className="font-medium text-charcoal">{userEmail}</span>{" "}
             </p>
           </div>
@@ -115,7 +179,7 @@ const VerifyEmail = () => {
             <div className="space-y-4">
               
               <InputOTP
-                maxLength={6}
+                maxLength={8}
                 value={otp}
                 onChange={setOtp}
                 className="w-full"
@@ -127,6 +191,8 @@ const VerifyEmail = () => {
                   <InputOTPSlot index={3} className="w-12 h-12 text-lg" />
                   <InputOTPSlot index={4} className="w-12 h-12 text-lg" />
                   <InputOTPSlot index={5} className="w-12 h-12 text-lg" />
+                  <InputOTPSlot index={6} className="w-12 h-12 text-lg" />
+                  <InputOTPSlot index={7} className="w-12 h-12 text-lg" />
                 </InputOTPGroup>
               </InputOTP>
             </div>
@@ -137,7 +203,7 @@ const VerifyEmail = () => {
               size="lg"
               className="w-full"
               loading={loading}
-              disabled={otp.length !== 6}
+              disabled={otp.length !== 8}
             >
               Submit
             </CTAButton>

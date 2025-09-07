@@ -7,6 +7,9 @@ import Index from "./pages/Index";
 import CreateAccount from "./pages/CreateAccount";
 import VerifyEmail from "./pages/VerifyEmail";
 import VerifyPhone from "./pages/VerifyPhone";
+import Login from "./pages/Login";
+import SelectRole from "./pages/SelectRole";
+// import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +25,8 @@ const App = () => (
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/verify-phone" element={<VerifyPhone />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/select-role" element={<SelectRole />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

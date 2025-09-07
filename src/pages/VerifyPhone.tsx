@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/ui/Header";
 import { CTAButton } from "@/components/ui/CTAButton";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
+
 
 const VerifyPhone = () => {
   const [otp, setOtp] = useState("");
@@ -13,9 +15,41 @@ const VerifyPhone = () => {
   const [resendTimer, setResendTimer] = useState(0);
   const [codeResent, setCodeResent] = useState(false);
   const { toast } = useToast();
+  const [userPhone, setUserPhone] = useState("");
+  const [userId, setUserId] = useState("");
 
-  // Demo phone - in a real app this would come from router state or API
-  const userPhone = "+1 (555) 123-4567";
+    useEffect(() => {
+        const storedUser = localStorage.getItem("userSignupData");
+        if (storedUser) {
+            const { id, phone } = JSON.parse(storedUser); // tel = phone number from signup
+            if (id && phone) {
+            setUserId(id);
+            setUserPhone(phone);
+            return; // ✅ valid user, don’t redirect
+            }
+        }
+
+        // If missing data, redirect to signup
+        navigate("/create-account");
+    }, [navigate]);
+
+    // Countdown effect
+    useEffect(() => {
+      if (resendTimer <= 0) return;
+
+      const interval = setInterval(() => {
+        setResendTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval); // stop countdown at 0
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }, [resendTimer]);
+
 
 
 
@@ -32,17 +66,29 @@ const VerifyPhone = () => {
     }
             setLoading(true);
             
-            // Simulate API call
-            setTimeout(() => {
-            setLoading(false);
+        try {
+            const response = await axios.post("http://localhost:3000/api/users/new/phone/verify-code", {
+                userId,
+                phone: userPhone,
+                code: otp,
+            });
+
             toast({
                 title: "Phone Verified!",
-                description: "Your phone number has been successfully verified.",
+                description: response.data.message,
             });
-            
-            // Navigate to completion (or wherever the final step leads)
-            navigate("/");
-            }, 2000);
+
+            navigate("/"); // or next step
+        } catch (error: any) {
+            toast({
+                title: "Verification failed",
+                description: error?.response?.data?.error || "Invalid code or server error",
+                variant: "destructive",
+            });
+        } finally {
+        setLoading(false);
+        }
+
   };
 
     const handleResendCode = async () => {
@@ -50,20 +96,31 @@ const VerifyPhone = () => {
     
     setResendLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setResendLoading(false);
-      setCodeResent(true);
-      setResendTimer(24); // 24 seconds as shown in design
-      
-      toast({
-        title: "Code Sent",
-        description: "A new verification code has been sent to your email.",
-      });
-      
-      // Hide the "Code resent!" message after 3 seconds
-      setTimeout(() => setCodeResent(false), 3000);
-    }, 1000);
+    try {
+        await axios.post("http://localhost:3000/api/users/new/phone/resend-verification", {
+            userId,
+            phone: userPhone,
+        });
+
+        setCodeResent(true);
+        setResendTimer(24);
+
+        toast({
+            title: "Code Sent",
+            description: "A new verification code has been sent to your phone.",
+        });
+
+        setTimeout(() => setCodeResent(false), 3000);
+    } catch (error: any) {
+    toast({
+        title: "Failed to resend",
+        description: error?.response?.data?.error || "Something went wrong",
+        variant: "destructive",
+    });
+    } finally {
+        setResendLoading(false);
+    }
+
   };
 
   const handleCancel = () => {
@@ -147,7 +204,7 @@ const VerifyPhone = () => {
               Having trouble?{" "}
               <a 
                 href="mailto:team@womp.xyz" 
-                className="text-royal-blue hover:underline"
+                className="text-primary hover:underline"
               >
                 team@pccommunityevents
               </a>
