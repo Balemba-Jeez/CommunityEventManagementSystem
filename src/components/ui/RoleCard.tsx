@@ -19,15 +19,15 @@ const RoleCard = forwardRef<HTMLButtonElement, RoleCardProps>(
     return (
       <button
         className={cn(
-          "flex items-center gap-4 w-full p-4 bg-card border border-border rounded-lg font-body text-left transition-all hover:bg-neutral-bg focus:outline-none focus:ring-2 focus:ring-royal-blue focus:ring-offset-2",
-          selected && "border-royal-blue bg-royal-blue/5",
+          "flex items-center gap-4 w-full p-4 bg-card border border-border rounded-lg font-body text-left transition-all hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+          selected && "border-primary bg-primary/5",
           className
         )}
         ref={ref}
         {...props}
       >
         {/* Role Image/Icon */}
-        <div className="flex-shrink-0 w-12 h-12 bg-neutral-bg rounded-lg flex items-center justify-center">
+        <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-lg flex text-primary items-center justify-center">
           {role.image ? (
             <img
               src={role.image}
@@ -36,8 +36,8 @@ const RoleCard = forwardRef<HTMLButtonElement, RoleCardProps>(
             />
           ) : (
             role.icon || (
-              <div className="w-8 h-8 bg-royal-blue/20 rounded-full flex items-center justify-center">
-                <span className="text-royal-blue font-semibold text-sm">
+              <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                <span className="text-primary font-semibold text-sm">
                   {role.name.charAt(0)}
                 </span>
               </div>
@@ -47,18 +47,18 @@ const RoleCard = forwardRef<HTMLButtonElement, RoleCardProps>(
 
         {/* Role Name */}
         <div className="flex-1">
-          <h3 className="font-semibold text-charcoal">{role.name}</h3>
+          <h3 className="font-semibold text-foreground">{role.name}</h3>
         </div>
 
         {/* Selection Indicator */}
         <div className={cn(
           "w-4 h-4 rounded-full border-2 transition-colors",
           selected
-            ? "border-royal-blue bg-royal-blue" 
+            ? "border-primary bg-primary" 
             : "border-secondary-gray"
         )}>
           {selected && (
-            <div className="w-full h-full rounded-full bg-royal-blue flex items-center justify-center">
+            <div className="w-full h-full rounded-full bg-primary flex items-center justify-center">
               <div className="w-1.5 h-1.5 bg-white rounded-full" />
             </div>
           )}

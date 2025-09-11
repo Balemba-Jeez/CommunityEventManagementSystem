@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RoleCard, type Role } from "@/components/ui/RoleCard";
+import { RoleCard, type Role } from "../ui/RoleCard";
 import { CTAButton } from "@/components/ui/CTAButton";
 
 interface RoleListProps {

@@ -69,7 +69,7 @@ All colors MUST be HSL.
     --radius: 0.75rem;
 
     /* Typography Scale */
-    --font-heading: 'Playfair Display', serif;
+    /* --font-heading: 'Playfair Display', serif; */
     --font-body: 'Inter', sans-serif;
     --font-button: 'Poppins', sans-serif;
 

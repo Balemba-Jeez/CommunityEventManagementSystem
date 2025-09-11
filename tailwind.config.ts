@@ -18,11 +18,6 @@ export default {
 			}
 		},
 		extend: {
-			fontFamily: {
-				heading: ['var(--font-heading)', 'serif'],
-				body: ['var(--font-body)', 'sans-serif'],
-				button: ['var(--font-button)', 'sans-serif'],
-			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -86,7 +81,10 @@ export default {
 			},
 			fontFamily: {
 				'sans': ['Inter', 'system-ui', 'sans-serif'],
-				'display': ['Playfair Display', 'serif']
+				'display': ['Playfair Display', 'serif'],
+				heading: ['var(--font-heading)', 'serif'],
+				body: ['var(--font-body)', 'sans-serif'],
+				button: ['var(--font-button)', 'sans-serif'],
 			},
 			transitionTimingFunction: {
 				'smooth': 'var(--transition-smooth)'
