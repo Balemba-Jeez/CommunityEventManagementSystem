@@ -10,69 +10,47 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* PC's TACC Church Identity Color Palette */
-    /* Pure White #FFFFFF */
     --background: 0 0% 100%;
-
-    /* Charcoal Black #2C2C2C */
+    /* Pure White #FFFFFF */
     --foreground: 0 0% 17%;
+    /* Charcoal Black #2C2C2C */
 
     --card: 0 0% 100%;
-
     --card-foreground: 0 0% 17%;
 
     --popover: 0 0% 100%;
-
     --popover-foreground: 0 0% 17%;
 
-    /* Deep Royal Blue #2C3E94 */
     --primary: 230 55% 38%;
-
+    /* Deep Royal Blue #2C3E94 */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 100%;
-
     /* Pure White #FFFFFF */
     --secondary-foreground: 0 0% 17%;
 
-    /* Light Gray #F4F6F7 */
     --muted: 210 14% 96%;
-
-    /* #7F8C8D - Secondary Gray */
-    --secondary-gray: 202 9% 55%;
-
-
-
-    /* Muted Gray #7F8C8D */
+    /* Light Gray #F4F6F7 */
     --muted-foreground: 184 6% 54%;
+    /* Muted Gray #7F8C8D */
 
-    /* Deep Royal Blue for accents */
     --accent: 230 55% 38%;
-
+    /* Deep Royal Blue for accents */
     --accent-foreground: 0 0% 100%;
 
-    /* Alert Red #E74C3C */
     --destructive: 6 78% 57%;
-
+    /* Alert Red #E74C3C */
     --destructive-foreground: 0 0% 100%;
 
-    /* Success Green #27AE60 */
     --success: 145 63% 42%;
-
+    /* Success Green #27AE60 */
     --success-foreground: 0 0% 100%;
 
     --border: 210 14% 90%;
-
-    --input: var(--pure-white);
-
-    --ring: var(--primary);
+    --input: 210 14% 90%;
+    --ring: 230 55% 38%;
 
     --radius: 0.75rem;
-
-    /* Typography Scale */
-    /* --font-heading: 'Playfair Display', serif; */
-    --font-body: 'Inter', sans-serif;
-    --font-button: 'Poppins', sans-serif;
-
 
     /* PC's TACC Church design tokens */
     --primary-glow: 230 55% 48%;
@@ -174,5 +152,18 @@ All colors MUST be HSL.
 
   .section-alt {
     @apply bg-section-alt;
+  }
+}
+
+/* ---break---
+*/
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
   }
 }

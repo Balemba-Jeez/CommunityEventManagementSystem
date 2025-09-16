@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, Bell, Menu,} from 'lucide-react';
+import { Search, Plus, Bell, Menu, Mic} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -49,19 +49,25 @@ export const Header = ({ onToggleSidebar, sidebarCollapsed }: HeaderProps) => {
         <div className="flex items-center space-x-4">
 
         {/* Search Bar */}
-        <div className='mr-3'>
+        <div className='mr-3 flex items-center gap-2'>
             <SearchComponent 
               placeholder="What are you looking for?"
               onSearch={handleSearch}
-              className="max-w-2xl mx-auto w-[512px]"
+              onVoiceSearch={() => console.log('Voice search!')}
+              showVoiceIcon={true}
+              showMobileSearch={true}
+              className="max-w-2xl mx-auto w-[566px]"
             
-            />  
+            />
+            <Button variant='ghost' size='sm' className="w-10 h-10 p-0 hover:bg-[#e2e5e9] hover:text-black rounded-full">
+                <Mic className='text-black' style={{ width: '24px', height: '24px' }}/>
+            </Button>  
         </div>
 
         <Button
         asChild
         variant="secondary"
-        className="font-medium bg-[#e2e5e9] hover:bg-[#d6d9dd] hover:text-black"
+        className="font-medium bg-[#e2e5e9] hover:bg-[#d6d9dd] hover:text-black rounded-full"
         >
           <Link to="/create-post">
             <Plus style={{ width: '24px', height: '24px' }} />
@@ -84,27 +90,15 @@ export const Header = ({ onToggleSidebar, sidebarCollapsed }: HeaderProps) => {
             </Button>
           </div>
 
-          <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+          <Avatar className="cursor-pointer hover:ring-2 hover:ring-primary transition-all">
             <AvatarImage src="/api/placeholder/32/32" alt="Profile" />
             <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-              JD
+              B
             </AvatarFallback>
           </Avatar>
         </div>
       </div>
 
-      {/* Mobile Search */}
-      <div className="px-6 pb-4 md:hidden">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search events, streams..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 w-full bg-accent/50 border-accent focus:bg-background focus:border-primary transition-all"
-          />
-        </div>
-      </div>
     </header>
   );
 };

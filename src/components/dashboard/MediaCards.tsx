@@ -1,363 +1,597 @@
-import { useState } from 'react';
-import { Play, Users, Clock, Bookmark, Bell, MoreHorizontal, Calendar } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+"use client"
+
+import { useState } from "react"
+import { MoreHorizontal, Camera, Sparkles, Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { LiveStreamCarousel } from "./live-stream-carousel"
+import { StreamCard } from "./stream-card"
+import { ShortsCarousel } from "./shorts-carousel"
+import { SectionHeader } from "./section-header"
 
 interface MediaItem {
-  id: string;
-  title: string;
-  thumbnail: string;
-  type: 'live' | 'upcoming' | 'recorded';
-  zone: string;
-  viewCount?: string;
-  duration?: string;
-  scheduledTime?: string;
-  streamedTime?: string;
-  isBookmarked?: boolean;
-  isNotified?: boolean;
+  id: string
+  title: string
+  thumbnail: string
+  type: "live" | "upcoming" | "recorded"
+  zone: string
+  viewCount?: string
+  viewerNumber?: number
+  duration?: string
+  scheduledTime?: string
+  streamedTime?: string
+  isBookmarked?: boolean
+  isNotified?: boolean
+  streamerName?: string
+  category?: string
+  isVerified?: boolean
+  waitingCount?: string
+}
+
+interface Stream {
+  id: string
+  title: string
+  streamerName: string
+  thumbnail: string
+  viewCount?: string
+  waitingCount?: string
+  duration?: string
+  scheduledTime?: string
+  streamedTime?: string
+  isVerified?: boolean
+  category: string
 }
 
 interface MediaCardsProps {
-  selectedZone: string;
-  selectedEvent: string;
+  selectedZone: string
+  selectedEvent: string
+  collapsed: boolean;
 }
 
 const mockMediaItems: MediaItem[] = [
   {
-    id: '1',
-    title: 'Zone 3 Championship Finals - Live Commentary and Analysis',
-    thumbnail: '/api/placeholder/320/180',
-    type: 'live',
-    zone: 'Zone 3',
-    viewCount: '245K',
+    id: "1",
+    title: "Zone 3 Championship Finals - Live Commentary and Analysis",
+    thumbnail: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+    type: "live",
+    zone: "Zone 3",
+    viewCount: "245K",
+    viewerNumber: 245000,
     isBookmarked: false,
-    isNotified: true
+    isNotified: true,
+    streamerName: "Championship Stream",
+    category: "Sports",
   },
   {
-    id: '2',
-    title: 'Global Tournament Qualifiers - Day 2 Highlights',
-    thumbnail: '/api/placeholder/320/180',
-    type: 'recorded',
-    zone: 'Global',
-    viewCount: '89K',
-    duration: '2:34:15',
-    streamedTime: '3 hours ago',
+    id: "2",
+    title: "Global Tournament Qualifiers - Day 2 Highlights",
+    thumbnail: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+    type: "live",
+    zone: "Global",
+    viewCount: "189K",
+    viewerNumber: 189000,
+    duration: "2:34:15",
+    streamedTime: "3 hours ago",
     isBookmarked: true,
-    isNotified: false
+    isNotified: false,
+    streamerName: "Global Sports TV",
+    category: "Tournament",
   },
   {
-    id: '3',
-    title: 'Community Showcase - Weekly Featured Players',
-    thumbnail: '/api/placeholder/320/180',
-    type: 'upcoming',
-    zone: 'Community',
-    scheduledTime: 'Tomorrow, 2:00 PM',
+    id: "3",
+    title: "Community Showcase - Weekly Featured Players",
+    thumbnail: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+    type: "live",
+    zone: "Community",
+    viewCount: "156K",
+    viewerNumber: 156000,
+    scheduledTime: "Tomorrow, 2:00 PM",
     isBookmarked: false,
-    isNotified: true
+    isNotified: true,
+    streamerName: "Community Hub",
+    category: "Community",
   },
-  {
-    id: '4',
-    title: 'Zone 5 Regional Championship - Semi Finals',
-    thumbnail: '/api/placeholder/320/180',
-    type: 'live',
-    zone: 'Zone 5',
-    viewCount: '156K',
-    isBookmarked: true,
-    isNotified: true
-  },
-  {
-    id: '5',
-    title: 'International Friendship Cup - Opening Ceremony',
-    thumbnail: '/api/placeholder/320/180',
-    type: 'recorded',
-    zone: 'Global',
-    viewCount: '1.2M',
-    duration: '1:45:30',
-    streamedTime: '1 day ago',
-    isBookmarked: false,
-    isNotified: false
-  },
-  {
-    id: '6',
-    title: 'Zone 2 vs Zone 4 - Championship Playoffs',
-    thumbnail: '/api/placeholder/320/180',
-    type: 'upcoming',
-    zone: 'Zone 2',
-    scheduledTime: 'Today, 7:00 PM',
-    isBookmarked: true,
-    isNotified: true
-  }
-];
+]
 
-// YouTube Shorts style horizontal shelf
-const shortsItems = [
+const initialLiveStreams = [
   {
-    id: 's1',
-    title: 'Best Goals of the Week',
-    thumbnail: '/api/placeholder/160/284',
-    viewCount: '2.3M',
-    duration: '0:45'
+    id: "live1",
+    title: "LA CASA DE ALOFOKE DIA 29",
+    streamerName: "Alofokeradioshow",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Live%20events%20ui%20design-kC5lMyylfvYWmga8RyrnTqMfGOddSn.png",
+    viewCount: "63K watching",
+    isVerified: true,
+    category: "Entertainment",
   },
   {
-    id: 's2',
-    title: 'Epic Saves Compilation',
-    thumbnail: '/api/placeholder/160/284',
-    viewCount: '890K',
-    duration: '1:20'
+    id: "live2",
+    title: "House UAP hearing LIVE with Ross Coulthart | NewsNation",
+    streamerName: "NewsNation",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Live%20events%20ui%20design-kC5lMyylfvYWmga8RyrnTqMfGOddSn.png",
+    viewCount: "11K watching",
+    isVerified: true,
+    category: "News",
   },
   {
-    id: 's3',
-    title: 'Zone 3 Victory Celebration',
-    thumbnail: '/api/placeholder/160/284',
-    viewCount: '456K',
-    duration: '0:33'
+    id: "live3",
+    title: "Jeff Teague REACTS to Melo & Dwight Howard in Basketball Hall of Fame, Zaire...",
+    streamerName: "Club 520 Podcast",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Live%20events%20ui%20design-kC5lMyylfvYWmga8RyrnTqMfGOddSn.png",
+    viewCount: "5.5K watching",
+    isVerified: true,
+    category: "Sports",
   },
-  {
-    id: 's4',
-    title: 'Behind the Scenes',
-    thumbnail: '/api/placeholder/160/284',
-    viewCount: '234K',
-    duration: '2:15'
-  }
-];
+]
 
-export const MediaCards = ({ selectedZone, selectedEvent }: MediaCardsProps) => {
+
+const initialRecentStreams = [
+  {
+    id: "recent1",
+    title: "Apple Event — September 9",
+    streamerName: "Apple",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Recent%20Live%20streams%20ui%20design-zU3UsBubwUVPiPjCQzcvjcNMbG4vgR.png",
+    viewCount: "23M views",
+    duration: "1:11:53",
+    streamedTime: "Streamed 4 hours ago",
+    isVerified: true,
+    category: "Technology",
+  },
+  {
+    id: "recent2",
+    title: "The Pat McAfee Show Live | Tuesday September 9th 2025",
+    streamerName: "The Pat McAfee Show",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Recent%20Live%20streams%20ui%20design-zU3UsBubwUVPiPjCQzcvjcNMbG4vgR.png",
+    viewCount: "331K views",
+    streamedTime: "Streamed 3 hours ago",
+    isVerified: true,
+    category: "Sports",
+  },
+  {
+    id: "recent3",
+    title: "TACO TUESDAY ADMIN ABUSE + Taco Lucky Blocks!",
+    streamerName: "CaylusBlox",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Recent%20Live%20streams%20ui%20design-zU3UsBubwUVPiPjCQzcvjcNMbG4vgR.png",
+    viewCount: "684K views",
+    duration: "2:58:41",
+    streamedTime: "Streamed 26 minutes ago",
+    isVerified: true,
+    category: "Gaming",
+  },
+]
+
+
+const initialUpcomingStreams = [
+  {
+    id: "upcoming1",
+    title: "AO VIVO IRL: ENTREGAS IFOOD BALNEÁRIO CAMBORIÚ COM MÚSICAS...",
+    streamerName: "PITER MUNIZ BRASIL",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Upcoming%20Live%20streams%28events%29%20ui%20design-MeOl6uHhKrJSNkkAb7kC3kVPO9RE6Y.png",
+    waitingCount: "1 waiting",
+    scheduledTime: "Scheduled for 9/10/25, 12:00 AM",
+    category: "IRL",
+  },
+  {
+    id: "upcoming2",
+    title: "LIVE: PREVISÕES SOBRE O PÓS-JULGAMENTO DE BOLSONARO: ANISTI...",
+    streamerName: "Pedro Baldansa",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Upcoming%20Live%20streams%28events%29%20ui%20design-MeOl6uHhKrJSNkkAb7kC3kVPO9RE6Y.png",
+    waitingCount: "26 waiting",
+    scheduledTime: "Scheduled for 9/10/25, 12:00 AM",
+    category: "Politics",
+  },
+  {
+    id: "upcoming3",
+    title: "Điện Biến Mới Nhất Sáng 10/9 Sau Cảnh Cống Noi Thầy An Trú",
+    streamerName: "Hà Văn Vang",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Upcoming%20Live%20streams%28events%29%20ui%20design-MeOl6uHhKrJSNkkAb7kC3kVPO9RE6Y.png",
+    waitingCount: "2 waiting",
+    scheduledTime: "Scheduled for 9/10/25, 12:00 AM",
+    isVerified: true,
+    category: "News",
+  },
+]
+
+// Additional content that gets loaded
+const additionalLiveStreams = [
+  {
+    id: "live4",
+    title: "Evening Gaming Session - RPG Adventure",
+    streamerName: "GameMaster Pro",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Live%20events%20ui%20design-kC5lMyylfvYWmga8RyrnTqMfGOddSn.png",
+    viewCount: "8.2K watching",
+    isVerified: false,
+    category: "Gaming",
+  },
+  {
+    id: "live5",
+    title: "Cooking Workshop - Italian Cuisine",
+    streamerName: "Chef Marco",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Live%20events%20ui%20design-kC5lMyylfvYWmga8RyrnTqMfGOddSn.png",
+    viewCount: "3.1K watching",
+    isVerified: true,
+    category: "Cooking",
+  },
+  {
+    id: "live6",
+    title: "Music Production Livestream",
+    streamerName: "BeatMaker Studios",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Live%20events%20ui%20design-kC5lMyylfvYWmga8RyrnTqMfGOddSn.png",
+    viewCount: "12K watching",
+    isVerified: true,
+    category: "Music",
+  },
+]
+
+const additionalRecentStreams = [
+  {
+    id: "recent4",
+    title: "Tech Conference 2024 - AI Innovation Panel",
+    streamerName: "TechWorld",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Recent%20Live%20streams%20ui%20design-zU3UsBubwUVPiPjCQzcvjcNMbG4vgR.png",
+    viewCount: "156K views",
+    duration: "2:15:30",
+    streamedTime: "Streamed 1 day ago",
+    isVerified: true,
+    category: "Technology",
+  },
+  {
+    id: "recent5",
+    title: "Fitness Challenge - 30 Day Transformation",
+    streamerName: "FitLife Coach",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Recent%20Live%20streams%20ui%20design-zU3UsBubwUVPiPjCQzcvjcNMbG4vgR.png",
+    viewCount: "89K views",
+    duration: "1:45:20",
+    streamedTime: "Streamed 2 days ago",
+    isVerified: false,
+    category: "Fitness",
+  },
+  {
+    id: "recent6",
+    title: "Art Tutorial - Digital Painting Masterclass",
+    streamerName: "Digital Artist Pro",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Recent%20Live%20streams%20ui%20design-zU3UsBubwUVPiPjCQzcvjcNMbG4vgR.png",
+    viewCount: "42K views",
+    duration: "3:22:15",
+    streamedTime: "Streamed 5 hours ago",
+    isVerified: true,
+    category: "Art",
+  },
+]
+
+const additionalUpcomingStreams = [
+  {
+    id: "upcoming4",
+    title: "Morning Meditation and Mindfulness Session",
+    streamerName: "Zen Master",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Upcoming%20Live%20streams%28events%29%20ui%20design-MeOl6uHhKrJSNkkAb7kC3kVPO9RE6Y.png",
+    waitingCount: "45 waiting",
+    scheduledTime: "Scheduled for 9/11/25, 6:00 AM",
+    category: "Wellness",
+  },
+  {
+    id: "upcoming5",
+    title: "Weekly Tech News Roundup",
+    streamerName: "Tech Insider",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Upcoming%20Live%20streams%28events%29%20ui%20design-MeOl6uHhKrJSNkkAb7kC3kVPO9RE6Y.png",
+    waitingCount: "128 waiting",
+    scheduledTime: "Scheduled for 9/11/25, 3:00 PM",
+    isVerified: true,
+    category: "Technology",
+  },
+  {
+    id: "upcoming6",
+    title: "Community Q&A - Ask Anything Session",
+    streamerName: "Community Hub",
+    thumbnail: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Upcoming%20Live%20streams%28events%29%20ui%20design-MeOl6uHhKrJSNkkAb7kC3kVPO9RE6Y.png",
+    waitingCount: "67 waiting",
+    scheduledTime: "Scheduled for 9/11/25, 8:00 PM",
+    category: "Community",
+  },
+]
+
+
+const shortsData = [
+  {
+    id: "short1",
+    title: "When Hit-Girl drives all those shards of glass ...",
+    thumbnail: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+    viewCount: "2.1M views",
+    category: "Entertainment",
+  },
+  {
+    id: "short2",
+    title: "ILLEGAL video from Endgame 🤯 #marvel ...",
+    thumbnail: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+    viewCount: "10M views",
+    category: "Movies",
+  },
+  {
+    id: "short3",
+    title: "Why Apple removed the charging brick?",
+    thumbnail: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+    viewCount: "1.4M views",
+    category: "Technology",
+  },
+  {
+    id: "short4",
+    title: "DRG - Sebene",
+    thumbnail: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+    viewCount: "363 views",
+    category: "Music",
+  },
+  {
+    id: "short5",
+    title: "Mechanical Engineer vs Civil Engineer ...",
+    thumbnail: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+    viewCount: "223K views",
+    category: "Education",
+  },
+    {
+    id: "short6",
+    title: "Mechanical Engineer vs Civil Engineer ...",
+    thumbnail: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+    viewCount: "223K views",
+    category: "Education",
+  },
+    {
+    id: "short7",
+    title: "Mechanical Engineer vs Civil Engineer ...",
+    thumbnail: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+    viewCount: "223K views",
+    category: "Education",
+  },
+]
+
+export const MediaCards = ({ selectedZone, selectedEvent, collapsed }: MediaCardsProps) => {
   const [bookmarkedItems, setBookmarkedItems] = useState<Set<string>>(
-    new Set(mockMediaItems.filter(item => item.isBookmarked).map(item => item.id))
-  );
+    new Set(mockMediaItems.filter((item) => item.isBookmarked).map((item) => item.id)),
+  )
   const [notifiedItems, setNotifiedItems] = useState<Set<string>>(
-    new Set(mockMediaItems.filter(item => item.isNotified).map(item => item.id))
-  );
+    new Set(mockMediaItems.filter((item) => item.isNotified).map((item) => item.id)),
+  )
+
+  // State for managing streams
+  const [liveStreams, setLiveStreams] = useState<Stream[]>(initialLiveStreams)
+  const [recentStreams, setRecentStreams] = useState<Stream[]>(initialRecentStreams)
+  const [upcomingStreams, setUpcomingStreams] = useState<Stream[]>(initialUpcomingStreams)
+  const [isLoadingContent, setIsLoadingContent] = useState(false)
+  const [hasMoreContent, setHasMoreContent] = useState(true)
+  const [additionalContent, setAdditionalContent] = useState({
+    live: [] as typeof additionalLiveStreams,
+    recent: [] as typeof additionalRecentStreams,
+    upcoming: [] as typeof additionalUpcomingStreams,
+  })
+  const [hasLoadedMore, setHasLoadedMore] = useState(false)
+
+  const loadMoreContent = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    // Simulate loading more streams - you can replace this with actual API calls
+    const newLiveStreams = additionalLiveStreams.filter(
+      stream => !liveStreams.some(existing => existing.id === stream.id)
+    )
+    const newRecentStreams = additionalRecentStreams.filter(
+      stream => !recentStreams.some(existing => existing.id === stream.id)
+    )
+    const newUpcomingStreams = additionalUpcomingStreams.filter(
+      stream => !upcomingStreams.some(existing => existing.id === stream.id)
+    )
+
+    // Check if there's more content to load
+    const hasMore = newLiveStreams.length > 0 || newRecentStreams.length > 0 || newUpcomingStreams.length > 0
+
+    return {
+      liveStreams: newLiveStreams,
+      recentStreams: newRecentStreams,
+      upcomingStreams: newUpcomingStreams,
+      hasMore
+    }
+  }
+
+  // const handleLoadMoreContent = async () => {
+  //   setIsLoadingContent(true)
+  //   try {
+  //     const { liveStreams: newLive, recentStreams: newRecent, upcomingStreams: newUpcoming, hasMore } = await loadMoreContent()
+      
+  //     // Add new streams to existing ones
+  //     if (newLive.length > 0) {
+  //       setLiveStreams(prev => [...prev, ...newLive])
+  //     }
+  //     if (newRecent.length > 0) {
+  //       setRecentStreams(prev => [...prev, ...newRecent])
+  //     }
+  //     if (newUpcoming.length > 0) {
+  //       setUpcomingStreams(prev => [...prev, ...newUpcoming])
+  //     }
+
+  //     setHasMoreContent(hasMore)
+      
+  //     console.log("[v0] Loading more content...")
+  //     console.log(`Added ${newLive.length} live streams, ${newRecent.length} recent streams, ${newUpcoming.length} upcoming streams`)
+      
+  //   } catch (error) {
+  //     console.error("Failed to load more content:", error)
+  //   } finally {
+  //     setIsLoadingContent(false)
+  //   }
+  // }
+
+    const handleLoadMoreContent = async () => {
+    setIsLoadingContent(true)
+    try {
+      await loadMoreContent()
+      setAdditionalContent({
+        live: additionalLiveStreams,
+        recent: additionalRecentStreams,
+        upcoming: additionalUpcomingStreams,
+      })
+      setHasLoadedMore(true)
+    } catch (error) {
+      console.error("Failed to load more content:", error)
+    } finally {
+      setIsLoadingContent(false)
+    }
+  }
 
   const toggleBookmark = (id: string) => {
-    setBookmarkedItems(prev => {
-      const newSet = new Set(prev);
+    setBookmarkedItems((prev) => {
+      const newSet = new Set(prev)
       if (newSet.has(id)) {
-        newSet.delete(id);
+        newSet.delete(id)
       } else {
-        newSet.add(id);
+        newSet.add(id)
       }
-      return newSet;
-    });
-  };
+      return newSet
+    })
+  }
 
   const toggleNotification = (id: string) => {
-    setNotifiedItems(prev => {
-      const newSet = new Set(prev);
+    setNotifiedItems((prev) => {
+      const newSet = new Set(prev)
       if (newSet.has(id)) {
-        newSet.delete(id);
+        newSet.delete(id)
       } else {
-        newSet.add(id);
+        newSet.add(id)
       }
-      return newSet;
-    });
-  };
+      return newSet
+    })
+  }
 
-  const filteredItems = mockMediaItems.filter(item => {
-    if (selectedZone !== 'all' && item.zone !== selectedZone) return false;
-    return true;
-  });
-
-  const getTypeColor = (type: MediaItem['type']) => {
-    switch (type) {
-      case 'live':
-        return 'bg-live text-live-foreground';
-      case 'upcoming':
-        return 'bg-warning text-warning-foreground';
-      case 'recorded':
-        return 'bg-muted text-muted-foreground';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
-
-  const getTypeLabel = (type: MediaItem['type']) => {
-    switch (type) {
-      case 'live':
-        return 'LIVE';
-      case 'upcoming':
-        return 'UPCOMING';
-      case 'recorded':
-        return 'RECORDED';
-      default:
-        return '';
-    }
-  };
+  const topLiveStreams = mockMediaItems
+    .filter((item) => item.type === "live")
+    .filter((item) => selectedZone === "all" || item.zone === selectedZone)
+    .sort((a, b) => (b.viewerNumber || 0) - (a.viewerNumber || 0))
+    .slice(0, 3)
 
   return (
-    <div className="space-y-8">
-      {/* Main Media Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredItems.slice(0, 6).map((item, index) => (
-          <Card 
-            key={item.id} 
-            className="media-card group overflow-hidden"
-            style={{ animationDelay: `${index * 0.1}s` }}
-          >
-            <div className="relative aspect-video overflow-hidden">
-              <img
-                src={item.thumbnail}
-                alt={item.title}
-                className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                onError={(e) => {
-                  e.currentTarget.src = '/api/placeholder/320/180';
-                }}
-              />
-              
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Button size="lg" className="gradient-primary shadow-glow">
-                    <Play className="h-5 w-5 mr-2" fill="white" />
-                    {item.type === 'live' ? 'Watch Live' : item.type === 'upcoming' ? 'Set Reminder' : 'Watch'}
-                  </Button>
-                </div>
-              </div>
+    <div className="space-y-8 ">
+      <LiveStreamCarousel
+        streams={topLiveStreams}
+        bookmarkedItems={bookmarkedItems}
+        notifiedItems={notifiedItems}
+        onToggleBookmark={toggleBookmark}
+        onToggleNotification={toggleNotification}
+      />
 
-              {/* Top Badges */}
-              <div className="absolute top-3 left-3 flex items-center space-x-2">
-                <Badge className={`text-xs font-semibold ${getTypeColor(item.type)}`}>
-                  {getTypeLabel(item.type)}
-                </Badge>
-                {item.zone !== 'Community' && (
-                  <Badge variant="secondary" className="text-xs">
-                    {item.zone}
-                  </Badge>
-                )}
-              </div>
-
-              {/* Duration/View Count */}
-              <div className="absolute bottom-3 right-3">
-                {item.type === 'live' && item.viewCount && (
-                  <div className="flex items-center space-x-1 bg-black/70 text-white px-2 py-1 rounded text-xs">
-                    <Users className="h-3 w-3" />
-                    <span>{item.viewCount}</span>
-                  </div>
-                )}
-                {item.type === 'recorded' && item.duration && (
-                  <div className="bg-black/70 text-white px-2 py-1 rounded text-xs font-medium">
-                    {item.duration}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-base line-clamp-2 mb-2 group-hover:text-primary transition-colors">
-                {item.title}
-              </h3>
-              
-              <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-                <span className="font-medium">{item.zone === 'Community' ? 'Community' : item.zone}</span>
-                {item.viewCount && item.type === 'recorded' && (
-                  <span>{item.viewCount} views</span>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                  {item.streamedTime && (
-                    <div className="flex items-center space-x-1">
-                      <Clock className="h-3 w-3" />
-                      <span>{item.streamedTime}</span>
-                    </div>
-                  )}
-                  {item.scheduledTime && (
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>{item.scheduledTime}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleNotification(item.id)}
-                    className={`h-8 w-8 p-0 hover:bg-accent ${
-                      notifiedItems.has(item.id) ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    <Bell className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleBookmark(item.id)}
-                    className={`h-8 w-8 p-0 hover:bg-accent ${
-                      bookmarkedItems.has(item.id) ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    <Bookmark className="h-4 w-4" fill={bookmarkedItems.has(item.id) ? 'currentColor' : 'none'} />
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-accent text-muted-foreground">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* YouTube Shorts Style Horizontal Shelf */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-heading font-bold">Quick Highlights</h3>
-          <div className="flex space-x-2">
-            <Button variant="ghost" size="sm" className="hover:bg-accent">
-              <span className="mr-2">←</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="hover:bg-accent">
-              <span className="ml-2">→</span>
-            </Button>
-          </div>
-        </div>
-        
-        <div className="flex space-x-4 overflow-x-auto custom-scrollbar pb-4">
-          {shortsItems.map((short) => (
-            <div key={short.id} className="flex-shrink-0 cursor-pointer group">
-              <Card className="w-36 overflow-hidden hover:shadow-lg transition-all">
-                <div className="aspect-[9/16] relative">
-                  <img
-                    src={short.thumbnail}
-                    alt={short.title}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                    onError={(e) => {
-                      e.currentTarget.src = '/api/placeholder/160/284';
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Button size="sm" className="gradient-primary">
-                        <Play className="h-4 w-4" fill="white" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <div className="flex items-center justify-between text-white text-xs">
-                      <span className="bg-black/70 px-1 py-0.5 rounded">{short.duration}</span>
-                      <span className="bg-black/70 px-1 py-0.5 rounded">{short.viewCount}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-2">
-                  <h4 className="text-xs font-medium line-clamp-2">{short.title}</h4>
-                </div>
-              </Card>
-            </div>
+        <SectionHeader
+          title="Live Streams"
+          description="Currently active live streams"
+          icon={<div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {liveStreams.map((stream) => (
+            <StreamCard key={stream.id} stream={stream} type="live" />
           ))}
         </div>
       </div>
 
-      {/* Load More */}
+      <div className="space-y-4">
+        <SectionHeader title="Recent Live Streams" description="Recently concluded live streams" />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {recentStreams.map((stream) => (
+            <StreamCard key={stream.id} stream={stream} type="recent" />
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <SectionHeader title="Upcoming Live Streams" description="Scheduled live streams you can look forward to" />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {upcomingStreams.map((stream) => (
+            <StreamCard key={stream.id} stream={stream} type="upcoming" />
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <SectionHeader
+          title="Live Moments"
+          icon={
+            <div className="relative w-6 h-6 flex items-center justify-center">
+              <Camera className="h-5 w-5 text-[#2C3E94]" />
+              <Sparkles className="h-2 w-2 text-[#2C3E94] absolute -top-0.5 -right-0.5" />
+            </div>
+          }
+          actions={
+            <Button variant="ghost" size="sm" className="hover:bg-accent">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          }
+        />
+
+        <div className={`space-y-4 ${collapsed ? 'max-w-[1157px]' : 'max-w-[965px]'} `}>
+          <ShortsCarousel shorts={shortsData} />
+        </div>
+      </div>
+
+      {/* Additional content loaded after clicking Load More */}
+      {hasLoadedMore && (
+        <>
+          {additionalContent.live.length > 0 && (
+            <div className="space-y-4">
+              <SectionHeader
+                title="Live Streams"
+                description="Ongoing live streams"
+                icon={<div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {additionalContent.live.map((stream) => (
+                  <StreamCard key={stream.id} stream={stream} type="live" />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {additionalContent.recent.length > 0 && (
+            <div className="space-y-4">
+              <SectionHeader title="Recent Streams" description="Recently concluded streams" />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {additionalContent.recent.map((stream) => (
+                  <StreamCard key={stream.id} stream={stream} type="recent" />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {additionalContent.upcoming.length > 0 && (
+            <div className="space-y-4">
+              <SectionHeader title="Upcoming Streams" description="Scheduled streams" />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {additionalContent.upcoming.map((stream) => (
+                  <StreamCard key={stream.id} stream={stream} type="upcoming" />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
       <div className="flex justify-center">
-        <Button variant="outline" size="lg" className="hover:bg-accent">
-          Load More Content
+        <Button
+          variant="outline"
+          size="lg"
+          className="hover:bg-[#DBEAFE] hover:border hover:border-[#DBEAFE] hover:text-black bg-transparent min-w-[160px]"
+          onClick={handleLoadMoreContent}
+          disabled={isLoadingContent || hasLoadedMore}
+        >
+          {isLoadingContent ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Loading...
+            </>
+          ) : hasLoadedMore ? (
+            "All Content Loaded"
+          ) : (
+            "Load More Content"
+          )}
         </Button>
       </div>
     </div>
-  );
-};
+  )
+}

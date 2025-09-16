@@ -5,7 +5,7 @@ interface SkeletonLoaderProps {
 export const SkeletonLoader = ({ type }: SkeletonLoaderProps) => {
   if (type === 'stories') {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 w-full">
         <div className="flex items-center justify-between">
           <div className="h-8 w-32 shimmer rounded"></div>
           <div className="flex space-x-2">
@@ -28,7 +28,7 @@ export const SkeletonLoader = ({ type }: SkeletonLoaderProps) => {
 
   if (type === 'carousel') {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 w-full">
         <div className="flex items-center justify-between">
           <div className="h-8 w-24 shimmer rounded"></div>
           <div className="flex space-x-2">

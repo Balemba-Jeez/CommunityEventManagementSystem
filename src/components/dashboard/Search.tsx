@@ -1,16 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Clock, Trash2 } from 'lucide-react';
+import { Search, Clock, Trash2, Mic } from 'lucide-react';
 
 interface SearchComponentProps {
   placeholder?: string;
   onSearch?: (query: string) => void;
   className?: string;
+  showVoiceIcon?: boolean;
+  onVoiceSearch?: () => void;
+  showMobileSearch?: boolean;
 }
 
 const SearchComponent: React.FC<SearchComponentProps> = ({ 
   placeholder = "What are you looking for?", 
   onSearch, 
-  className = "" 
+  className = "" ,
+  showVoiceIcon = true,
+  onVoiceSearch,
+  showMobileSearch = true
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
@@ -84,8 +90,10 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
   };
 
   return (
+    <>
+    {/* Desktop Search - Hidden on mobile */}
     <div className={`relative ${className}`} ref={searchRef}>
-      {/* Search Input Container */}
+      {/* Desktop Search Input Container */}
       <div className="relative">
         <input
           type="text"
@@ -94,7 +102,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
           onChange={handleInputChange}
           onFocus={() => setShowSuggestions(true)}
           onKeyDown={handleKeyDown}
-          className="w-full pl-4 pr-12 py-3 rounded-full border border-gray-200 focus:outline-none focus:border-gray-300 text-base bg-white shadow-sm transition-all duration-200 hover:shadow-md focus:shadow-md"
+          className="w-full pl-4 pr-12 py-3 rounded-full border border-gray-200 focus:outline-none focus:border-primary text-base bg-white shadow-sm transition-all duration-200 hover:shadow-md focus:shadow-md"
         />
         
         {/* Search Button */}
@@ -107,7 +115,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
         </button>
       </div>
 
-      {/* Search Suggestions Dropdown */}
+      {/* Desktop Suggestions Dropdown */}
       {showSuggestions && recentSearches.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
           <div className="py-2">
@@ -151,38 +159,76 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
           </div>
         </div>
       )}
-    </div>
+
+      {/* Mobile Search - Only visible on mobile */}
+      {showMobileSearch && (
+        <div className="px-6 pb-4 md:hidden">
+          <div className="relative" ref={searchRef}>
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search events, streams..."
+              value={searchQuery}
+              onChange={handleInputChange}
+              onFocus={() => setShowSuggestions(true)}
+              onKeyDown={handleKeyDown}
+              className="pl-10 pr-4 w-full py-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-[#2C3E94] focus:outline-none transition-all"
+            />
+            
+            {/* Mobile Voice Icon */}
+            {showVoiceIcon && (
+              <button 
+                onClick={() => onVoiceSearch && onVoiceSearch()}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1"
+                aria-label="Voice search"
+              >
+                <Mic className="h-4 w-4 text-gray-400" />
+              </button>
+            )}
+          </div>
+
+          {/* Mobile Suggestions Dropdown */}
+          {showSuggestions && recentSearches.length > 0 && (
+            <div className="mt-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+              <div className="py-2">
+                {recentSearches
+                  .filter(search => 
+                    searchQuery === '' || 
+                    search.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .map((search: string, index: number) => (
+                    <div 
+                      key={index}
+                      className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => handleSearchSelect(search)}
+                    >
+                      <div className="flex items-center flex-1">
+                        <Clock className="h-4 w-4 text-gray-400 mr-3 flex-shrink-0" />
+                        <span className="text-sm text-gray-700 truncate">{search}</span>
+                      </div>
+                      
+                      <button 
+                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                          e.stopPropagation();
+                          deleteSuggestion(index);
+                        }}
+                        className="p-2 hover:bg-gray-100 rounded-md ml-2 flex-shrink-0"
+                        aria-label="Delete suggestion"
+                      >
+                        <Trash2 className="h-4 w-4 text-gray-400" />
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}      
+        </div>
+      )}
+      </div>
+    </>
   );
 };
 
-// Example usage component
-// const App: React.FC = () => {
-//   const handleSearch = (query: string): void => {
-//     // Handle your search logic here
-//     console.log('Parent received search:', query);
-//   };
 
-//   return (
-//     <div className="min-h-screen bg-gray-50 p-8">
-//       <div className="max-w-4xl mx-auto">
-//         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
-//           Dribbble-Style Search Component (TypeScript)
-//         </h1>
-        
-//         <div className="bg-white p-6 rounded-lg shadow-sm">
-//           <SearchComponent 
-//             placeholder="What are you looking for?"
-//             onSearch={handleSearch}
-//             className="max-w-2xl mx-auto"
-//           />
-//         </div>
-        
-//         <div className="mt-8 text-center text-gray-600">
-//           <p>Try searching or click on recent suggestions</p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
 
 export default SearchComponent;
