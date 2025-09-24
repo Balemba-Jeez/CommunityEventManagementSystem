@@ -1,3 +1,5 @@
+
+
 import db from "@/lib/db";
 import { isAuthenticated, isAuthenticatedV2, isAuthorized, isAuthorizedV2 } from "@/lib/security/auth";
 import { NextResponse } from "next/server";
@@ -16,34 +18,54 @@ export async function GET(req){
         const user = auth.user;
 
         // Request Authorization
-        if (!isAuthorized(user, ['zone_event_manager', 'general_event_manager'])) {
+        if (!isAuthorizedV2(user, ['zone_event_manager', 'general_event_manager'])) {
             return NextResponse.json({ message: "Forbidden" }, { status: 403 });
         }
 
         // Parse query parameter
-        const { searchParams } = new URL(req.url);
-        const all = searchParams.get("all") === "true";
+        // const { searchParams } = new URL(req.url);
+        // const all = searchParams.get("all") === "true";
 
         let whereClause = '';
         let params = [];
 
-        if (all) {
-            // Must have permission to view all events
+        // if (user.role === 'zone_event_manager') {
+        //     // Must have permission to view all events
             
-            const roles = user.role.map(r => r.name); // ['visitor', 'member', 'general_event_manager']
-            console.log(roles, user.role, user)
-            if (!roles.includes('general_event_manager')) {
-                return NextResponse.json({ message: "Not authorized for all events" }, { status: 403 });
-            }
-            whereClause = `WHERE e.status != 'draft'`;
-            params
-        } else {
-            // Only their own events
-            whereClause = `WHERE e.organizer_id = ?`;
-            params.push(user.id);
-        }
+        //     // const roles = user.role.map(r => r.name); // ['visitor', 'member', 'general_event_manager']
+        //     // console.log(roles, user.role, user)
+        //     // if (!roles.includes('general_event_manager')) {
+        //     //     return NextResponse.json({ message: "Not authorized for all events" }, { status: 403 });
+        //     // }
+        //     whereClause = `WHERE e.status != 'draft'`;
+        //     params
+        // } else if (user.role === 'zone_event_manager'){  
+        //               // Only their own events
+        //     whereClause = `WHERE e.organizer_id = ?`;
+        //     params.push(user.id);
+
+        // } else if (user.role === 'member') {
+
+        //     whereClause = `WHERE user.zone_id = ?`;
+        //     params.push(user.zone_id);
+            
+
+        // }
 
         // Get mapping category → events + properties
+    
+    if (user.role ==="general_event_manager") {
+        // Fetch all non-draft events
+        whereClause = `WHERE e.status != 'draft'`;
+    } else if (user.role ==="zone_event_manager") {
+        // Fetch only events organized by this user
+        whereClause = `WHERE e.organizer_id = ?`;
+        params.push(user.id);
+    } else {
+        return NextResponse.json({ message: "Not authorized" }, { status: 403 });
+    }
+
+
     const [categoryMap] = await db.execute(`
       SELECT 
         c.id AS category_type, 
@@ -189,7 +211,7 @@ export async function POST(req) {
 
         // Insert new event
         const [result] = await db.execute(
-            "INSERT INTO events (title, description, location, start_time, organizer_id, category_id, image_url, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO events (title, description, location, start_time, organizer_id, category_id, image_url, status, zone_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             [
                 title, 
                 description, 
@@ -198,7 +220,8 @@ export async function POST(req) {
                 user.id, 
                 category_id, 
                 image_url, 
-                status 
+                status,
+                user.zone_id 
             ]
         );
 

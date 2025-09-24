@@ -1,5 +1,5 @@
 import db from '@/lib/db';
-import { verifyToken } from '@/lib/security/token'; 
+import { verifyTokenV2 } from '@/lib/security/token'; 
 
 
 export async function GET(req, context) {
@@ -39,7 +39,7 @@ export async function GET(req, context) {
         }
 
         // Verify token
-        const user = verifyToken(token);
+        const user = verifyTokenV2(token);
 
         console.log('Requested user id:', id);
         console.log('user-token',user)
@@ -164,55 +164,57 @@ export async function GET(req, context) {
 
 
 export async function PUT(req, { params }) {
-    try {
-        const body = await req.json();
-        const { status } = body;
-        const { id } = params;
-        // Get token from request header
-        const authHeader = req.headers.get('authorization');
-        const token = authHeader?.split(' ')[1]; // Bearer <token>
+  try {
+    const body = await req.json();
+    const { status } = body;
+    const { id } = params;
 
-        // Verify token
-        const user = verifyToken(token);
-        console.log('user-token',user)
-        if (!user) {
-        return new Response(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });
-        }
+    // Get token from request header
+    const authHeader = req.headers.get("authorization");
+    const token = authHeader?.split(" ")[1]; // Bearer <token>
 
-        const { name:role } = user.role[0]
+    // Verify token
+    const user = verifyTokenV2(token);
+    console.log("user-token", user);
 
-        // update if role is admin
-        if (role === 'admin') {
+    if (!user) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 });
+    }
 
-            // Update status in database
-            const [result] = await db.execute(
-                `UPDATE users SET status = ? WHERE id = ?`,
-                [status, id]
-            );
-    
-            console.log(result);
-        
-            if (result.affectedRows === 0) {
-                return new Response(JSON.stringify({ message: 'User not found' }), { status: 404 });
-            }
-        
-            return new Response(JSON.stringify({ message: 'Status updated successfully' }), {
-                status: 200,
-            });
-            
-          }else{
+    const { name: role } = user.role[0];
 
-            return new Response(JSON.stringify({ message: 'Forbidden' }), { status: 403 });
-          }
+    // Only admin can update user status
+    if (role !== "admin") {
+      return new Response(JSON.stringify({ message: "Forbidden" }), { status: 403 });
+    }
 
-    
- 
-    
-      } catch (error) {
-        console.error('Update error:', error);
-        return new Response(JSON.stringify({ message: 'Server error' }), { status: 500 });
-      }
+    let query;
+    let paramsArr;
+
+    // ✅ Only set approved_at if status is active
+    if (status === "active") {
+      query = `UPDATE users SET status = ?, approved_at = NOW() WHERE id = ?`;
+      paramsArr = [status, id];
+    } else {
+      query = `UPDATE users SET status = ? WHERE id = ?`;
+      paramsArr = [status, id];
+    }
+
+    const [result] = await db.execute(query, paramsArr);
+
+    if (result.affectedRows === 0) {
+      return new Response(JSON.stringify({ message: "User not found" }), { status: 404 });
+    }
+
+    return new Response(JSON.stringify({ message: "Status updated successfully" }), {
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Update error:", error);
+    return new Response(JSON.stringify({ message: "Server error" }), { status: 500 });
+  }
 }
+
 
 export async function DELETE(req, { params }) {
   const { id } = params;
@@ -220,7 +222,7 @@ export async function DELETE(req, { params }) {
   try {
     // Extract token from headers and verify
     const token = req.headers.get('authorization')?.split(' ')[1];
-    const user = verifyToken(token);
+    const user = verifyTokenV2(token);
     console.log('user-token',user)
     if (!user) {
     return new Response(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });
@@ -228,7 +230,7 @@ export async function DELETE(req, { params }) {
 
     const { name:role } = user.role[0];
     
-    if (user.role !== 'admin') {
+    if (role !== 'admin') {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403 });
     }
 

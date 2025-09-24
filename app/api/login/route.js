@@ -11,7 +11,7 @@ export async function POST(req) {
   try {
     // Fetch user by email
     const [rows] = await db.execute(
-      'SELECT id, name, email, password, image, zone_id, status, is_verified FROM users WHERE email = ?',
+      'SELECT * FROM users WHERE email = ?',
       [email]
     );
 
@@ -23,7 +23,7 @@ export async function POST(req) {
 
     const user = rows[0];
 
-    console.log(user, !user.is_verified);
+    console.log(user, user.is_verified);
 
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
@@ -33,17 +33,17 @@ export async function POST(req) {
       });
     }
 
-    if (!user.is_verified) {
-        return new Response(JSON.stringify({ message: 'Account not verified' }), {
-          status: 401,
-        });
-      }    
+    // if (!user.is_verified) {
+    //     return new Response(JSON.stringify({ message: 'Account not verified' }), {
+    //       status: 401,
+    //     });
+    //   }    
 
-    if (user.status !== 'active') {
-        return new Response(JSON.stringify({ message: 'Account not active' }), {
-          status: 401,
-        });
-      }
+    // if (user.status !== 'active') {
+    //     return new Response(JSON.stringify({ message: 'Account not active' }), {
+    //       status: 401,
+    //     });
+    //   }
     
     // Fetch user role
     const [userRoles] = await db.execute(
@@ -64,15 +64,19 @@ export async function POST(req) {
     // Temporary token (just for confirming role)
     const tempToken = await generateTokenV2("login_session", {
       id: user.id,
+      name:user.name,
       email: user.email,
       roles: userRoles.map(r => r.name),
-      zone: user.zone_id
+      zone: user.zone_id,
     });
+
+    console.log('tempToken', tempToken);
 
     return Response.json({
       message: "Login step 1 successful. Please confirm role.",
       tempToken,
-      roles: userRoles.map(r => r.name) // send available roles
+      roles: userRoles.map(r => r.name), // send available roles
+      user
     });
 
   } catch (error) {

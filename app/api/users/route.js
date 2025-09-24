@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 export async function POST(req) {
   try {
     const body = await req.json();
+    console.log('body phone number', body.tel);
     const { name, email, password, tel = '237678189559', opt_ins = {} } = body;
 
     // Body Check
@@ -31,8 +32,12 @@ export async function POST(req) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    console.log('phone number', tel);
+
     // Format phone (Vonage E.164 without +) ---
     let formattedTel = tel.replace(/\D/g, ""); // keep only digits
+
+    console.log('formatted phone number', formattedTel);
 
     if (formattedTel.length === 9 && formattedTel.startsWith("6")) {
       // local CM number
@@ -45,6 +50,8 @@ export async function POST(req) {
       return NextResponse.json({ error: "Invalid phone number format" }, { status: 400 });
     }
 
+    console.log('formatted phone number', formattedTel);
+
     // Insert new user
     const [user_result] = await db.execute(
       `INSERT INTO users (name, email, password, tel)
@@ -55,13 +62,15 @@ export async function POST(req) {
     const userId = user_result.insertId;
 
     //  Fetch all available channels
-    const [channels] = await db.execute("SELECT id, name FROM notification_channels");
+    const [channels] = await db.execute("SELECT id, name FROM notification_channels WHERE name != 'whatsapp'");
 
     //  Build lookup { sms: 1, whatsapp: 2, email: 3 }
     const channelMap = {};
     channels.forEach(ch => {
       channelMap[ch.name] = ch.id;
     });
+
+    console.log('channels', channelMap);
 
 
   // Insert user opt-ins
@@ -76,12 +85,14 @@ export async function POST(req) {
         case "sms":
           address = formattedTel;
           break;
-        case "whatsapp":
-          address = body.whatsapp_number || null;
-          break;
+        // case "whatsapp":
+        //   address = body.whatsapp_number || null;
+        //   break;
         default:
           address = null;
       }
+
+      console.log('address', address);
 
       await db.execute(
         `INSERT INTO user_notification_channels (user_id, channel_id, address, preferences)

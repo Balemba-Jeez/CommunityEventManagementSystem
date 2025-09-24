@@ -1,7 +1,8 @@
-// app/api/auth/resend-verification/route.js
+// app/api/user/new/email/resend-verification/route.js
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
 import generateCode from "@/lib/security/generateCode";
+import getExpirationTime from "@/lib/security/generateCodeTimeFrame";
 import mailer from "@/lib/mail";
 
 export async function POST(req) {

@@ -1,0 +1,32 @@
+<!-- stream-player.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Live Stream Test</title>
+</head>
+
+<body>
+    <h1>Live Stream</h1>
+    <video id="videoElement" controls autoplay width="640" height="360"></video>
+
+    <!-- Include flv.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/flv.js@latest"></script>
+    <script>
+        if (flvjs.isSupported()) {
+            var videoElement = document.getElementById('videoElement');
+            var flvPlayer = flvjs.createPlayer({
+                type: 'flv',
+                url: 'http://localhost:8000/live/stream.flv'
+            });
+            flvPlayer.attachMediaElement(videoElement);
+            flvPlayer.load();
+            flvPlayer.play();
+        } else {
+            alert('FLV.js is not supported in your browser.');
+        }
+    </script>
+</body>
+
+</html>

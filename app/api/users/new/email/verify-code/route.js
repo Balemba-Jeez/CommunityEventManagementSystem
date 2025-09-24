@@ -20,6 +20,8 @@ export async function POST(req) {
       [email, code]
     );
 
+    console.log('email verification', rows)
+
     if (rows.length === 0) {
       return new Response(
         JSON.stringify({ error: 'Invalid or expired code' }),

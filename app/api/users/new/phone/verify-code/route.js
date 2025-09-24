@@ -1,6 +1,7 @@
-// /api/users/verify-phone-code/route.js
+// /api/users/new/phone/verify-phone-code/route.js
 import db from '@/lib/db';
 import { NextResponse } from 'next/server';
+import { formatToE164 } from '@/lib/utils/number';
 
 export async function POST(req) {
   try {
@@ -10,8 +11,14 @@ export async function POST(req) {
       return NextResponse.json({ error: 'userId, phone, and code are required' }, { status: 400 });
     }
 
+    console.log('number', phone);
+
+    const number = formatToE164(phone);
+
+    console.log('number', number);
+
     const [rows] = await db.execute(
-      `SELECT id, code, expires_at FROM phone_verifications WHERE user_id = ? AND phone = ? AND used = 0 ORDER BY expires_at DESC LIMIT 1`,
+      `SELECT id, code, expires_at FROM phone_verifications WHERE user_id = ? AND phone_number = ? AND used = 0 ORDER BY expires_at DESC LIMIT 1`,
       [userId, phone]
     );
 
@@ -21,6 +28,7 @@ export async function POST(req) {
 
     const verification = rows[0];
     const now = new Date();
+    console.log(verification, code)
 
     if (verification.code !== code) {
       return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 });
@@ -33,11 +41,11 @@ export async function POST(req) {
     // Mark code as used
     await db.execute(`UPDATE phone_verifications SET used = 1 WHERE id = ?`, [verification.id]);
 
-    // Checks if user opted in for SMS
-    const [channel] = await db.execute(
-      `SELECT id FROM user_notification_channels WHERE user_id = ? AND channel_id = (SELECT id FROM channels WHERE name = 'sms')`,
-      [userId]
-    );
+    // // Checks if user opted in for SMS
+    // const [channel] = await db.execute(
+    //   `SELECT id FROM user_notification_channels WHERE user_id = ? AND channel_id = (SELECT id FROM channels WHERE name = 'sms')`,
+    //   [userId]
+    // );
 
     // if (channel.length === 0) {
     //   return NextResponse.json({ message: 'Phone verified successfully' }, { status: 200 });
@@ -47,11 +55,12 @@ export async function POST(req) {
     // // Mark user SMS channel as verified
     // await db.execute(`UPDATE user_notification_channels SET verification_status = 'verified', is_active = 1 WHERE user_id = ? AND channel_id = (SELECT id FROM channels WHERE name = 'sms')`, [userId]);
 
+    number = formatToE164(number);
 
     // Update user_notification_channel to verified if it exists
     await db.execute(
-      `UPDATE user_notification_channels SET verification_status='verified', is_active=1 WHERE address = ? AND user_id = ? AND channel_id=(SELECT id FROM channels WHERE name='sms')`,
-      [number, userId]
+      `UPDATE user_notification_channels SET verification_status='verified', is_active=1 WHERE address = ? AND user_id = ? AND channel_id=(SELECT id FROM notification_channels WHERE name='sms')`,
+      [phone, userId]
     );
     
     return NextResponse.json({ message: 'Phone verified successfully' }, { status: 200 });
