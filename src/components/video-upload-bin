@@ -1,0 +1,1033 @@
+// const uploadFileWithProgress = async (
+//   file: File,
+//   onProgress: (percent: number) => void,
+//   signal?: AbortSignal
+// ) => {
+//   const sanitizedFileName = sanitizeFileName(file.name);
+//   const filePath = `videos/${Date.now()}-${sanitizedFileName}`;
+
+//   // 1️⃣ Create signed upload URL
+//   const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+//     .from("video-posts") // correct bucket
+//     .createSignedUploadUrl(filePath, 300); // 60s expiry
+//   if (signedUrlError) throw signedUrlError;
+
+//   // 2️⃣ Upload video with Axios to track progress
+//   await axios.put(signedUrlData.signedUrl, file, {
+//     headers: { "Content-Type": file.type },
+//     onUploadProgress: (progressEvent) => {
+//       const percentCompleted = Math.round(
+//         (progressEvent.loaded * 100) / (progressEvent.total || file.size)
+//       );
+//       onProgress(percentCompleted);
+//     },
+//     signal,
+//   });
+
+//   // 3️⃣ Get public URL of uploaded video
+//   const { data: videoData } = supabase.storage.from("video-posts").getPublicUrl(filePath);
+//   const videoUrl = videoData.publicUrl;
+
+//   // 4️⃣ Generate thumbnail
+//   const thumbnailBlob = await generateThumbnail(file);
+//   let thumbnailUrl = null;
+
+//   if (thumbnailBlob) {
+//     const thumbPath = `thumbnails/${Date.now()}-${sanitizedFileName}.jpg`;
+//     const { error: thumbError } = await supabase.storage
+//       .from("video-posts")
+//       .upload(thumbPath, thumbnailBlob, { contentType: "image/jpeg" });
+//     if (thumbError) throw thumbError;
+
+//     const { data: thumbData } = supabase.storage.from("video-posts").getPublicUrl(thumbPath);
+//     thumbnailUrl = thumbData.publicUrl;
+//   }
+
+//   return { videoUrl, thumbnailUrl };
+// };
+
+
+// const uploadToSupabase = async (fileId: string) => {
+//   const uploadFile = uploadFiles.find((f) => f.id === fileId);
+//   if (!uploadFile) return;
+
+//   const controller = new AbortController();
+//   updateFileField(fileId, "status", "uploading");
+//   updateFileField(fileId, "abortController", controller);
+
+//   try {
+//     // Upload video with live progress
+//     const videoUrl = await uploadFileWithProgress(uploadFile.file, (progress) => {
+//       updateFileField(fileId, "progress", progress);
+//     }, controller.signal); // pass signal for cancellation
+
+//     // 2️⃣ Generate thumbnail
+//     const thumbnailBlob = await generateThumbnail(uploadFile.file);
+//     let thumbnailUrl = null;
+//     if (thumbnailBlob) {
+//       const thumbPath = `thumbnails/${Date.now()}-${uploadFile.file.name}.jpg`;
+//       const { error: thumbError } = await supabase.storage
+//         .from("videos")
+//         .upload(thumbPath, thumbnailBlob, { contentType: "image/jpeg" });
+//       if (thumbError) throw thumbError;
+
+//       const { data: thumbData } = supabase.storage.from("videos").getPublicUrl(thumbPath);
+//       thumbnailUrl = thumbData.publicUrl;
+//     }
+
+//     updateFileField(fileId, "progress", 100);
+
+//     // 3️⃣ Send metadata to backend
+//     await axios.post("http://localhost:3000/api/clips", {
+//       title: uploadFile.title,
+//       description: uploadFile.description,
+//       content: videoUrl,
+//       thumbnail: thumbnailUrl,
+//       event_id: uploadFile.eventId,
+//       user_id: 1,
+//     });
+
+//     updateFileField(fileId, "status", "completed");
+//   } catch (err) {
+//     if (axios.isCancel(err)) {
+//       console.log("Upload canceled by user");
+//       updateFileField(fileId, "status", "pending"); // reset status
+//     } else {
+//       console.error("Upload failed", err);
+//       updateFileField(fileId, "status", "error");
+//     }
+//   }
+// };
+
+// const generateThumbnail = (file: File, seekTo = 2) => {
+//   return new Promise<Blob | null>((resolve, reject) => {
+//     const video = document.createElement("video");
+//     video.preload = "metadata";
+
+//     video.onloadedmetadata = () => {
+//       video.currentTime = seekTo;
+//     };
+
+//     video.onseeked = () => {
+//       const canvas = document.createElement("canvas");
+//       canvas.width = video.videoWidth;
+//       canvas.height = video.videoHeight;
+//       const ctx = canvas.getContext("2d");
+//       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+//       canvas.toBlob((blob) => {
+//         resolve(blob);
+//       }, "image/jpeg", 0.8);
+//     };
+
+//     video.onerror = (err) => reject(err);
+//     video.src = URL.createObjectURL(file);
+//   });
+// };
+
+
+//   const uploadToSupabase = async (fileId: string) => {
+//         const uploadFile = uploadFiles.find((f) => f.id === fileId)
+//         if (!uploadFile) return
+
+//         updateFileField(fileId, "status", "uploading")
+
+//         try {
+//             const filePath = `videos/${Date.now()}-${uploadFile.file.name}`
+
+//             // Upload to Supabase
+//             const { error } = await supabase.storage
+//             .from("videos") // your bucket name
+//             .upload(filePath, uploadFile.file)
+
+//             if (error) throw error
+
+//             // Get public URL
+//             const { data } = supabase.storage.from("videos").getPublicUrl(filePath)
+
+//             updateFileField(fileId, "progress", 100)
+            
+
+//             console.log("✅ Uploaded video URL:", data.publicUrl)
+
+//             // 👉 Send metadata to backend
+//             await axios.post("/api/clips", {
+//                 title: uploadFile.title,
+//                 description: uploadFile.description,
+//                 content: data.publicUrl,
+//                 thumbnail:null,
+//                 event_id: uploadFile.eventId,
+//                  user_id: 1,
+//             });
+
+//             updateFileField(fileId, "status", "completed")
+
+//         } catch (err) {
+//             console.error("Upload failed", err)
+//             updateFileField(fileId, "status", "error")
+//         }
+// }
+
+
+//   const startUpload = async () => {
+//     const pendingFiles = uploadFiles.filter((file) => file.status === "pending")
+
+//     // Start all uploads simultaneously
+//     const uploadPromises = pendingFiles.map((file) => simulateUpload(file.id))
+//     await Promise.all(uploadPromises)
+//   }
+
+    // const uploadToSupabase = async (fileId: string) => {
+    //     const uploadFile = uploadFiles.find((f) => f.id === fileId);
+    //     if (!uploadFile) return;
+
+    //     updateFileField(fileId, "status", "uploading");
+
+    //     try {
+    //         // 1️⃣ Upload video
+    //         const filePath = `videos/${Date.now()}-${uploadFile.file.name}`;
+    //         const { error: videoError } = await supabase.storage
+    //         .from("videos")
+    //         .upload(filePath, uploadFile.file);
+    //         if (videoError) throw videoError;
+
+    //         const { data: videoData } = supabase.storage.from("videos").getPublicUrl(filePath);
+
+    //         // 2️⃣ Generate thumbnail
+    //         const thumbnailBlob = await generateThumbnail(uploadFile.file);
+    //         let thumbnailUrl = null;
+    //         if (thumbnailBlob) {
+    //         const thumbPath = `thumbnails/${Date.now()}-${uploadFile.file.name}.jpg`;
+    //         const { error: thumbError } = await supabase.storage
+    //             .from("videos")
+    //             .upload(thumbPath, thumbnailBlob, { contentType: "image/jpeg" });
+    //         if (thumbError) throw thumbError;
+
+    //         const { data: thumbData } = supabase.storage.from("videos").getPublicUrl(thumbPath);
+    //         thumbnailUrl = thumbData.publicUrl;
+    //         }
+
+    //         updateFileField(fileId, "progress", 100);
+
+    //         console.log("✅ Uploaded video URL:", videoData.publicUrl);
+    //         console.log("✅ Thumbnail URL:", thumbnailUrl);
+
+    //         // 3️⃣ Send metadata to backend
+    //         await axios.post("http://localhost:3000/api/clips", {
+    //         title: uploadFile.title,
+    //         description: uploadFile.description,
+    //         content: videoData.publicUrl,
+    //         thumbnail: thumbnailUrl,
+    //         event_id: uploadFile.eventId,
+    //         user_id: 1,
+    //         });
+
+    //         updateFileField(fileId, "status", "completed");
+    //     } catch (err) {
+    //         console.error("Upload failed", err);
+    //         updateFileField(fileId, "status", "error");
+    //     }
+    // };
+
+    // const uploadFileWithProgress = async (
+//   file: File,
+//   onProgress: (percent: number) => void,
+//   signal?: AbortSignal
+// ) => {
+//   const sanitizedFileName = sanitizeFileName(file.name);
+//   const filePath = `videos/${Date.now()}-${sanitizedFileName}`;
+
+//   // 1️⃣ Create signed upload URL
+//   const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+//     .from("video-posts") // correct bucket
+//     .createSignedUploadUrl(filePath, 300); // 60s expiry
+//   if (signedUrlError) throw signedUrlError;
+
+//   // 2️⃣ Upload video with Axios to track progress
+//   await axios.put(signedUrlData.signedUrl, file, {
+//     headers: { "Content-Type": file.type },
+//     onUploadProgress: (progressEvent) => {
+//       const percentCompleted = Math.round(
+//         (progressEvent.loaded * 100) / (progressEvent.total || file.size)
+//       );
+//       onProgress(percentCompleted);
+//     },
+//     signal,
+//   });
+
+//   // 3️⃣ Get public URL of uploaded video
+//   const { data: videoData } = supabase.storage.from("video-posts").getPublicUrl(filePath);
+//   const videoUrl = videoData.publicUrl;
+
+//   // 4️⃣ Generate thumbnail
+//   const thumbnailBlob = await generateThumbnail(file);
+//   let thumbnailUrl = null;
+
+//   if (thumbnailBlob) {
+//     const thumbPath = `thumbnails/${Date.now()}-${sanitizedFileName}.jpg`;
+//     const { error: thumbError } = await supabase.storage
+//       .from("video-posts")
+//       .upload(thumbPath, thumbnailBlob, { contentType: "image/jpeg" });
+//     if (thumbError) throw thumbError;
+
+//     const { data: thumbData } = supabase.storage.from("video-posts").getPublicUrl(thumbPath);
+//     thumbnailUrl = thumbData.publicUrl;
+//   }
+
+//   return { videoUrl, thumbnailUrl };
+// };
+
+
+// const uploadToSupabase = async (fileId: string) => {
+//   const uploadFile = uploadFiles.find((f) => f.id === fileId);
+//   if (!uploadFile) return;
+
+//   const controller = new AbortController();
+//   updateFileField(fileId, "status", "uploading");
+//   updateFileField(fileId, "abortController", controller);
+
+//   try {
+//     // Upload video with live progress
+//     const videoUrl = await uploadFileWithProgress(uploadFile.file, (progress) => {
+//       updateFileField(fileId, "progress", progress);
+//     }, controller.signal); // pass signal for cancellation
+
+//     // 2️⃣ Generate thumbnail
+//     const thumbnailBlob = await generateThumbnail(uploadFile.file);
+//     let thumbnailUrl = null;
+//     if (thumbnailBlob) {
+//       const thumbPath = `thumbnails/${Date.now()}-${uploadFile.file.name}.jpg`;
+//       const { error: thumbError } = await supabase.storage
+//         .from("videos")
+//         .upload(thumbPath, thumbnailBlob, { contentType: "image/jpeg" });
+//       if (thumbError) throw thumbError;
+
+//       const { data: thumbData } = supabase.storage.from("videos").getPublicUrl(thumbPath);
+//       thumbnailUrl = thumbData.publicUrl;
+//     }
+
+//     updateFileField(fileId, "progress", 100);
+
+//     // 3️⃣ Send metadata to backend
+//     await axios.post("http://localhost:3000/api/clips", {
+//       title: uploadFile.title,
+//       description: uploadFile.description,
+//       content: videoUrl,
+//       thumbnail: thumbnailUrl,
+//       event_id: uploadFile.eventId,
+//       user_id: 1,
+//     });
+
+//     updateFileField(fileId, "status", "completed");
+//   } catch (err) {
+//     if (axios.isCancel(err)) {
+//       console.log("Upload canceled by user");
+//       updateFileField(fileId, "status", "pending"); // reset status
+//     } else {
+//       console.error("Upload failed", err);
+//       updateFileField(fileId, "status", "error");
+//     }
+//   }
+// };
+
+// const generateThumbnail = (file: File, seekTo = 2) => {
+//   return new Promise<Blob | null>((resolve, reject) => {
+//     const video = document.createElement("video");
+//     video.preload = "metadata";
+
+//     video.onloadedmetadata = () => {
+//       video.currentTime = seekTo;
+//     };
+
+//     video.onseeked = () => {
+//       const canvas = document.createElement("canvas");
+//       canvas.width = video.videoWidth;
+//       canvas.height = video.videoHeight;
+//       const ctx = canvas.getContext("2d");
+//       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+//       canvas.toBlob((blob) => {
+//         resolve(blob);
+//       }, "image/jpeg", 0.8);
+//     };
+
+//     video.onerror = (err) => reject(err);
+//     video.src = URL.createObjectURL(file);
+//   });
+// };
+
+
+//   const uploadToSupabase = async (fileId: string) => {
+//         const uploadFile = uploadFiles.find((f) => f.id === fileId)
+//         if (!uploadFile) return
+
+//         updateFileField(fileId, "status", "uploading")
+
+//         try {
+//             const filePath = `videos/${Date.now()}-${uploadFile.file.name}`
+
+//             // Upload to Supabase
+//             const { error } = await supabase.storage
+//             .from("videos") // your bucket name
+//             .upload(filePath, uploadFile.file)
+
+//             if (error) throw error
+
+//             // Get public URL
+//             const { data } = supabase.storage.from("videos").getPublicUrl(filePath)
+
+//             updateFileField(fileId, "progress", 100)
+            
+
+//             console.log("✅ Uploaded video URL:", data.publicUrl)
+
+//             // 👉 Send metadata to backend
+//             await axios.post("/api/clips", {
+//                 title: uploadFile.title,
+//                 description: uploadFile.description,
+//                 content: data.publicUrl,
+//                 thumbnail:null,
+//                 event_id: uploadFile.eventId,
+//                  user_id: 1,
+//             });
+
+//             updateFileField(fileId, "status", "completed")
+
+//         } catch (err) {
+//             console.error("Upload failed", err)
+//             updateFileField(fileId, "status", "error")
+//         }
+// }
+
+
+//   const startUpload = async () => {
+//     const pendingFiles = uploadFiles.filter((file) => file.status === "pending")
+
+//     // Start all uploads simultaneously
+//     const uploadPromises = pendingFiles.map((file) => simulateUpload(file.id))
+//     await Promise.all(uploadPromises)
+//   }
+
+    // const uploadToSupabase = async (fileId: string) => {
+    //     const uploadFile = uploadFiles.find((f) => f.id === fileId);
+    //     if (!uploadFile) return;
+
+    //     updateFileField(fileId, "status", "uploading");
+
+    //     try {
+    //         // 1️⃣ Upload video
+    //         const filePath = `videos/${Date.now()}-${uploadFile.file.name}`;
+    //         const { error: videoError } = await supabase.storage
+    //         .from("videos")
+    //         .upload(filePath, uploadFile.file);
+    //         if (videoError) throw videoError;
+
+    //         const { data: videoData } = supabase.storage.from("videos").getPublicUrl(filePath);
+
+    //         // 2️⃣ Generate thumbnail
+    //         const thumbnailBlob = await generateThumbnail(uploadFile.file);
+    //         let thumbnailUrl = null;
+    //         if (thumbnailBlob) {
+    //         const thumbPath = `thumbnails/${Date.now()}-${uploadFile.file.name}.jpg`;
+    //         const { error: thumbError } = await supabase.storage
+    //             .from("videos")
+    //             .upload(thumbPath, thumbnailBlob, { contentType: "image/jpeg" });
+    //         if (thumbError) throw thumbError;
+
+    //         const { data: thumbData } = supabase.storage.from("videos").getPublicUrl(thumbPath);
+    //         thumbnailUrl = thumbData.publicUrl;
+    //         }
+
+    //         updateFileField(fileId, "progress", 100);
+
+    //         console.log("✅ Uploaded video URL:", videoData.publicUrl);
+    //         console.log("✅ Thumbnail URL:", thumbnailUrl);
+
+    //         // 3️⃣ Send metadata to backend
+    //         await axios.post("http://localhost:3000/api/clips", {
+    //         title: uploadFile.title,
+    //         description: uploadFile.description,
+    //         content: videoData.publicUrl,
+    //         thumbnail: thumbnailUrl,
+    //         event_id: uploadFile.eventId,
+    //         user_id: 1,
+    //         });
+
+    //         updateFileField(fileId, "status", "completed");
+    //     } catch (err) {
+    //         console.error("Upload failed", err);
+    //         updateFileField(fileId, "status", "error");
+    //     }
+    // };
+
+      // const removeFile = (id: string) => {
+  //   setUploadFiles((prev) => prev.filter((file) => file.id !== id))
+  // }
+
+//   const simulateUpload = async (fileId: string) => {
+//     updateFileField(fileId, "status", "uploading")
+
+//     // Simulate upload progress
+//     for (let progress = 0; progress <= 100; progress += 10) {
+//       await new Promise((resolve) => setTimeout(resolve, 200))
+//       updateFileField(fileId, "progress", progress)
+//     }
+
+//     updateFileField(fileId, "status", "completed")
+//   }
+
+
+  // const controller = new AbortController();
+
+  // "use client"
+
+// import type React from "react"
+
+// import { useState, useCallback,useEffect } from "react"
+// import { X, Upload, Video, AlertCircle, CheckCircle } from "lucide-react"
+// import { Button } from "@/components/ui/button"
+// import { Input } from "@/components/ui/input"
+// import { Label } from "@/components/ui/label"
+// import { Textarea } from "@/components/ui/textarea"
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+// import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+// import { Progress } from "@/components/ui/progress"
+// import { Card, CardContent } from "@/components/ui/card"
+// import supabase  from "../lib/superbaseClient"
+// import axios from "axios"
+
+
+// interface Event {
+//   id: number
+//   name: string
+//   date: string
+// }
+
+// interface VideoUploadModalProps {
+//   isOpen: boolean
+//   onClose: () => void
+//   events: Event[]
+// }
+
+// interface UploadFile {
+//   file: File
+//   id: string
+//   progress: number
+//   status: "pending" | "uploading" | "completed" | "error"
+//   title: string
+//   description: string
+//   eventId: string
+//   abortController?: AbortController;
+// }
+
+// export function VideoUploadModal({ isOpen, onClose, events }: VideoUploadModalProps) {
+//   const [dragActive, setDragActive] = useState(false)
+//   const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([])
+//   const [selectedEventId, setSelectedEventId] = useState<string>("")
+
+//   useEffect(() => {
+//   setUploadFiles(prev =>
+//   prev.map(file =>
+//     file.status === "pending" ? { ...file, eventId: selectedEventId } : file
+//   )
+// );
+
+// }, [selectedEventId])
+
+
+//   const handleDrag = useCallback((e: React.DragEvent) => {
+//     e.preventDefault()
+//     e.stopPropagation()
+//     if (e.type === "dragenter" || e.type === "dragover") {
+//       setDragActive(true)
+//     } else if (e.type === "dragleave") {
+//       setDragActive(false)
+//     }
+//   }, [])
+
+//   const handleDrop = useCallback((e: React.DragEvent) => {
+//     e.preventDefault()
+//     e.stopPropagation()
+//     setDragActive(false)
+
+//     const files = Array.from(e.dataTransfer.files).filter((file) => file.type.startsWith("video/"))
+
+//     if (files.length > 0) {
+//       addFiles(files)
+//     }
+//   }, [])
+
+//   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const files = Array.from(e.target.files || [])
+//     addFiles(files)
+//   }
+
+//   const addFiles = (files: File[]) => {
+//     const newFiles: UploadFile[] = files.map((file) => ({
+//       file,
+//       id: Math.random().toString(36).substr(2, 9),
+//       progress: 0,
+//       status: "pending",
+//       title: file.name.replace(/\.[^/.]+$/, ""),
+//       description: "",
+//       eventId: selectedEventId,
+//     }))
+
+//     setUploadFiles((prev) => [...prev, ...newFiles])
+//   }
+
+
+
+//   const updateFileField = (id: string, field: keyof UploadFile, value: any) => {
+//     setUploadFiles((prev) => prev.map((file) => (file.id === id ? { ...file, [field]: value } : file)))
+//   }
+
+
+
+// const removeFile = (id: string) => {
+//   const file = uploadFiles.find(f => f.id === id);
+//   if (file?.abortController) {
+//     file.abortController.abort(); // cancel ongoing upload
+//   }
+//   setUploadFiles(prev => prev.filter(f => f.id !== id));
+// };
+
+
+
+
+// const generateThumbnail = (file: File, seekTo = 2) => {
+//   return new Promise((resolve, reject) => {
+//     const video = document.createElement("video");
+//     video.preload = "metadata";
+
+//     video.onloadedmetadata = () => {
+//       video.currentTime = seekTo;
+//     };
+
+//     video.onseeked = () => {
+//       const canvas = document.createElement("canvas");
+//       canvas.width = video.videoWidth;
+//       canvas.height = video.videoHeight;
+//       const ctx = canvas.getContext("2d");
+//       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+//       canvas.toBlob((blob) => {
+//         resolve(blob);
+//       }, "image/jpeg", 0.8);
+//     };
+
+//     video.onerror = (err) => reject(err);
+//     video.src = URL.createObjectURL(file);
+//   });
+// };
+
+// const sanitizeFileName = (fileName: string) => {
+//   return fileName
+//     .replace(/\s+/g, "_")       // replace spaces with underscores
+//     .replace(/[^\w.-]/g, "");   // remove non-alphanumeric, dot, dash characters
+// };
+
+
+// const uploadFileWithProgress = async (
+//   file: File,
+//   onProgress: (percent: number) => void,
+//   signal?: AbortSignal
+// ) => {
+//   const sanitizedFileName = file.name.replace(/\s+/g, "_").replace(/[^\w.-]/g, "");
+//   const filePath = `videos/${Date.now()}-${sanitizedFileName}`;
+
+//   // Upload video directly to public bucket
+//   const { data, error } = await supabase.storage
+//     .from("video-posts")
+//     .upload(filePath, file, { cacheControl: "3600", upsert: true });
+//   if (error) throw error;
+
+//   // Track progress (optional, here using signal + axios if needed)
+//   if (signal) {
+//     await axios.put(data?.signedUrl || filePath, file, {
+//       headers: { "Content-Type": file.type },
+//       onUploadProgress: (progressEvent) => {
+//         const percent = Math.round((progressEvent.loaded * 100) / (progressEvent.total || file.size));
+//         onProgress(percent);
+//       },
+//       signal,
+//     });
+//   }
+
+//   const { data: videoData } = supabase.storage.from("video-posts").getPublicUrl(filePath);
+//   const videoUrl = videoData.publicUrl;
+
+//   // Generate thumbnail
+//   let thumbnailUrl = null;
+//   const thumbnailBlob = await generateThumbnail(file);
+//   if (thumbnailBlob) {
+//     const thumbPath = `thumbnails/${Date.now()}-${sanitizedFileName}.jpg`;
+//     const { error: thumbError } = await supabase.storage
+//       .from("video-posts")
+//       .upload(thumbPath, thumbnailBlob, { contentType: "image/jpeg", upsert: true });
+//     if (thumbError) throw thumbError;
+
+//     const { data: thumbData } = supabase.storage.from("video-posts").getPublicUrl(thumbPath);
+//     thumbnailUrl = thumbData.publicUrl;
+//   }
+
+//   return { videoUrl, thumbnailUrl };
+// };
+
+
+
+// const uploadToSupabase = async (fileId: string) => {
+//   const uploadFile = uploadFiles.find(f => f.id === fileId);
+//   if (!uploadFile) return;
+
+//   const controller = new AbortController();
+//   updateFileField(fileId, "status", "uploading");
+//   updateFileField(fileId, "abortController", controller);
+
+//   try {
+//     // Upload video with progress & cancellation
+//     const { videoUrl, thumbnailUrl } = await uploadFileWithProgress(
+//       uploadFile.file,
+//       (progress) => updateFileField(fileId, "progress", progress),
+//       controller.signal
+//     );
+
+//     // Send metadata to backend
+//     await axios.post("/api/clips", {
+//       title: uploadFile.title,
+//       description: uploadFile.description,
+//       content: videoUrl,
+//       thumbnail: thumbnailUrl,
+//       event_id: uploadFile.eventId,
+//       user_id: 1,
+//     });
+
+//     updateFileField(fileId, "status", "completed");
+//   } catch (err) {
+//     if (axios.isCancel(err)) {
+//       console.log("Upload canceled");
+//       updateFileField(fileId, "status", "pending"); // reset
+//     } else {
+//       console.error("Upload failed", err);
+//       updateFileField(fileId, "status", "error");
+//     }
+//   }
+// };
+
+//     const startUpload = async () => {
+//         const pendingFiles = uploadFiles.filter((file) => file.status === "pending")
+//         // Start uploading all pending files simultaneously
+//         const uploadPromises = pendingFiles.map((file) => uploadToSupabase(file.id))
+//         await Promise.all(uploadPromises)
+//     }
+
+
+//   const formatFileSize = (bytes: number) => {
+//     if (bytes === 0) return "0 Bytes"
+//     const k = 1024
+//     const sizes = ["Bytes", "KB", "MB", "GB"]
+//     const i = Math.floor(Math.log(bytes) / Math.log(k))
+//     return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+//   }
+
+//   const getStatusIcon = (status: UploadFile["status"]) => {
+//     switch (status) {
+//       case "completed":
+//         return <CheckCircle className="h-4 w-4 text-green-600" />
+//       case "error":
+//         return <AlertCircle className="h-4 w-4 text-red-600" />
+//       case "uploading":
+//         return <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+//       default:
+//         return <Video className="h-4 w-4 text-muted-foreground" />
+//     }
+//   }
+
+//   const allCompleted = uploadFiles.length > 0 && uploadFiles.every((file) => file.status === "completed")
+//   const hasUploading = uploadFiles.some((file) => file.status === "uploading")
+
+//   return (
+//     <Dialog open={isOpen} onOpenChange={onClose}>
+//       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+//         <DialogHeader>
+//           <DialogTitle className="flex items-center gap-2">
+//             <Upload className="h-5 w-5 text-primary" />
+//             Upload Videos
+//           </DialogTitle>
+//         </DialogHeader>
+
+//         <div className="space-y-6">
+//           {/* Event Selection */}
+//           <div className="space-y-2">
+//             <Label htmlFor="event-select">Select Event</Label>
+//             <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+//               <SelectTrigger>
+//                 <SelectValue placeholder="Choose an event for your videos" />
+//               </SelectTrigger>
+//               <SelectContent>
+//                 {events.map((event) => (
+//                   <SelectItem key={event.id} value={event.id.toString()}>
+//                     {event.name} - {event.date}
+//                   </SelectItem>
+//                 ))}
+//               </SelectContent>
+//             </Select>
+//           </div>
+
+//           {/* Upload Area */}
+//           <div
+//             className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+//               dragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+//             }`}
+//             onDragEnter={handleDrag}
+//             onDragLeave={handleDrag}
+//             onDragOver={handleDrag}
+//             onDrop={handleDrop}
+//           >
+//             <div className="flex flex-col items-center gap-4">
+//               <div className="p-4 rounded-full bg-primary/10">
+//                 <Upload className="h-8 w-8 text-primary" />
+//               </div>
+//               <div>
+//                 <p className="text-lg font-medium text-foreground">
+//                   Drop your video files here, or{" "}
+//                   <label className="text-primary hover:text-primary/80 cursor-pointer underline">
+//                     click to browse
+//                     <input type="file" multiple accept="video/*" onChange={handleFileSelect} className="hidden" />
+//                   </label>
+//                 </p>
+//                 <p className="text-sm text-muted-foreground mt-2">
+//                   Supported files: MP4, MOV, AVI, WebM • Maximum size: 500MB
+//                 </p>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* File List */}
+//           {uploadFiles.length > 0 && (
+//             <div className="space-y-4">
+//               <div className="flex items-center justify-between">
+//                 <h3 className="text-lg font-medium">Files to Upload ({uploadFiles.length})</h3>
+//                 <div className="flex gap-2">
+//                   <Button variant="outline" size="sm" onClick={() => setUploadFiles([])} disabled={hasUploading}>
+//                     Clear All
+//                   </Button>
+//                   <Button
+//                     onClick={startUpload}
+//                     disabled={hasUploading || allCompleted || !selectedEventId}
+//                     className="bg-primary hover:bg-primary/90"
+//                   >
+//                     {hasUploading ? "Uploading..." : allCompleted ? "All Uploaded" : "Start Upload"}
+//                   </Button>
+//                 </div>
+//               </div>
+
+//               <div className="space-y-3 max-h-96 overflow-y-auto">
+//                 {uploadFiles.map((uploadFile) => (
+//                   <Card key={uploadFile.id} className="p-4">
+//                     <CardContent className="p-0">
+//                       <div className="flex items-start gap-4">
+//                         <div className="flex-shrink-0 mt-1">{getStatusIcon(uploadFile.status)}</div>
+
+//                         <div className="flex-1 space-y-3">
+//                           <div className="flex items-center justify-between">
+//                             <div>
+//                               <p className="font-medium text-sm">{uploadFile.file.name}</p>
+//                               <p className="text-xs text-muted-foreground">{formatFileSize(uploadFile.file.size)}</p>
+//                             </div>
+//                             <Button
+//                               variant="ghost"
+//                               size="sm"
+//                               onClick={() => removeFile(uploadFile.id)}
+//                               disabled={uploadFile.status === "uploading"}
+//                             >
+//                               <X className="h-4 w-4" />
+//                             </Button>
+//                           </div>
+
+//                           {uploadFile.status === "uploading" && (
+//                             <div className="space-y-2">
+//                               <Progress value={uploadFile.progress} className="h-2" />
+//                               <p className="text-xs text-muted-foreground">Uploading... {uploadFile.progress}%</p>
+//                             </div>
+//                           )}
+
+//                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+//                             <div className="space-y-1">
+//                               <Label htmlFor={`title-${uploadFile.id}`} className="text-xs">
+//                                 Video Title
+//                               </Label>
+//                               <Input
+//                                 id={`title-${uploadFile.id}`}
+//                                 value={uploadFile.title}
+//                                 onChange={(e) => updateFileField(uploadFile.id, "title", e.target.value)}
+//                                 placeholder="Enter video title"
+//                                 disabled={uploadFile.status === "uploading"}
+//                                 className="text-sm"
+//                               />
+//                             </div>
+//                             <div className="space-y-1">
+//                               <Label htmlFor={`description-${uploadFile.id}`} className="text-xs">
+//                                 Description
+//                               </Label>
+//                               <Textarea
+//                                 id={`description-${uploadFile.id}`}
+//                                 value={uploadFile.description}
+//                                 onChange={(e) => updateFileField(uploadFile.id, "description", e.target.value)}
+//                                 placeholder="Brief description"
+//                                 disabled={uploadFile.status === "uploading"}
+//                                 className="text-sm min-h-[60px]"
+//                               />
+//                             </div>
+//                           </div>
+//                         </div>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
+
+//           {/* Action Buttons */}
+//           <div className="flex justify-end gap-3 pt-4 border-t">
+//             <Button variant="outline" onClick={onClose} disabled={hasUploading}>
+//               {allCompleted ? "Close" : "Cancel"}
+//             </Button>
+//             {allCompleted && (
+//               <Button onClick={onClose} className="bg-primary hover:bg-primary/90">
+//                 Done
+//               </Button>
+//             )}
+//           </div>
+//         </div>
+//       </DialogContent>
+//     </Dialog>
+//   )
+// }
+
+  // const addFiles = (files: File[]) => {
+  //   const newFiles: UploadFile[] = files.map((file) => ({
+  //     file,
+  //     id: Math.random().toString(36).substr(2, 9),
+  //     progress: 0,
+  //     status: "pending",
+  //     title: file.name.replace(/\.[^/.]+$/, ""),
+  //     description: "",
+  //     eventId: selectedEventId,
+  //   }))
+  //   setUploadFiles((prev) => [...prev, ...newFiles])
+  // }
+
+    // const uploadFileWithProgress = async (
+  //   file: File,
+  //   onProgress: (percent: number) => void,
+  //   signal?: AbortSignal
+  // ) => {
+  //   const sanitizedFileName = sanitizeFileName(file.name);
+  //   const filePath = `videos/${Date.now()}-${sanitizedFileName}`;
+
+  //   const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+  //     .from("video-posts")
+  //     .createSignedUploadUrl(filePath, 300);
+
+  //   if (signedUrlError) throw signedUrlError;
+
+  //   await axios.put(signedUrlData.signedUrl, file, {
+  //     headers: { "Content-Type": file.type },
+  //     onUploadProgress: (progressEvent) => {
+  //       const percentCompleted = Math.round(
+  //         (progressEvent.loaded * 100) / (progressEvent.total || file.size)
+  //       );
+  //       onProgress(percentCompleted);
+  //     },
+  //     signal,
+  //   });
+
+  //   const { data: videoData } = supabase.storage.from("video-posts").getPublicUrl(filePath);
+  //   const videoUrl = videoData.publicUrl;
+
+  //   const thumbnailBlob = await generateThumbnail(file);
+  //   let thumbnailUrl = null;
+  //   if (thumbnailBlob) {
+  //     const thumbPath = `thumbnails/${Date.now()}-${sanitizedFileName}.jpg`;
+  //     const { error: thumbError } = await supabase.storage
+  //       .from("video-posts")
+  //       .upload(thumbPath, thumbnailBlob, { contentType: "image/jpeg" });
+  //     if (thumbError) throw thumbError;
+  //     const { data: thumbData } = supabase.storage.from("video-posts").getPublicUrl(thumbPath);
+  //     thumbnailUrl = thumbData.publicUrl;
+  //   }
+  //   return { videoUrl, thumbnailUrl };
+  // };
+
+  // export async function GET() {
+//   try {
+//     const [clips] = await db.execute("SELECT * FROM clips ORDER BY created_at DESC");
+//     return NextResponse.json(clips);
+//   } catch (err) {
+//     console.error("Error fetching clips:", err);
+//     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+//   }
+// }
+
+// export async function POST(req) {
+//   try {
+//     const body = await req.json();
+//     const { user_id, event_id, content, thumbnail, title, description } = body;
+
+//     if (!user_id || !content) {
+//       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+//     }
+
+//     // Insert into MySQL
+//     const [result] = await db.execute(
+//       `INSERT INTO clips (user_id, event_id, content, thumbnail, title, description, views_count)
+//        VALUES (?, ?, ?, ?, ?, ?, 0)`,
+//       [user_id, event_id || null, content, thumbnail || null, title || null, description || null]
+//     );
+
+//     return NextResponse.json(
+//       {
+//         id: result.insertId,
+//         user_id,
+//         event_id,
+//         content,
+//         thumbnail,
+//         title,
+//         description,
+//         views_count: 0,
+//       },
+//       { status: 201 }
+//     );
+//   } catch (err) {
+//     console.error("Error inserting clip:", err);
+//     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+//   }
+// }
+
+// export async function PATCH(req, { params }) {
+//   try {
+//     const { id } = params; // clip id from URL
+//     const body = await req.json();
+//     const { status } = body;
+
+//     if (!status || !["processing", "completed", "error"].includes(status)) {
+//       return NextResponse.json(
+//         { error: "Invalid status. Must be 'processing', 'completed', or 'error'." },
+//         { status: 400 }
+//       );
+//     }
+
+//     const [result] = await db.execute(
+//       `UPDATE clips SET status = ? WHERE id = ?`,
+//       [status, id]
+//     );
+
+//     if (result.affectedRows === 0) {
+//       return NextResponse.json({ error: "Clip not found" }, { status: 404 });
+//     }
+
+//     return NextResponse.json({ id, status }, { status: 200 });
+//   } catch (err) {
+//     console.error("Error updating clip status:", err);
+//     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+//   }
+// }

@@ -837,3 +837,1679 @@ export const StoriesList: React.FC<StoriesListProps> = ({ stories, onStoryClick,
     </div>
   );
 };
+
+
+ // useEffect(() => {
+  //   if (events) {
+  //     setAllEvents(events)
+  //     return
+  //   }
+
+  //   const fetchEvents = async () => {
+  //     setIsLoading(true)
+  //     setFetchError(null)
+      
+  //     try {
+  //       let endpoint = ""
+  //       let queryParams = new URLSearchParams()
+
+  //       switch (pageType) {
+  //         case "zone":
+  //           endpoint = `/api/zones/${zoneId}/events`
+  //           break
+  //         case "global":
+  //           endpoint = "/api/events/global" // or "/api/community/events"
+  //           break
+  //         case "saved":
+  //           endpoint = `/api/users/${userId}/saved-events`
+  //           break
+  //         case "all":
+  //         default:
+  //           endpoint = "http://localhost:3000/api/events/member"
+  //           break
+  //       }
+
+  //       const response = await fetch(`${endpoint}?${queryParams}`)
+  //       if (!response.ok) {
+  //         throw new Error(`Failed to fetch events: ${response.statusText}`)
+  //       }
+        
+  //       const fetchedEvents = await response.json()
+  //       setAllEvents(fetchedEvents.events || fetchedEvents) // Handle different API response formats
+  //     } catch (err: any) {
+  //       setFetchError(err.message)
+  //       console.error("Error fetching events:", err)
+  //     } finally {
+  //       setIsLoading(false)
+  //     }
+  //   }
+
+  //   fetchEvents()
+  // }, [pageType, userId, zoneId, events])
+
+  // // import { 
+// //   Home, 
+// //   Calendar, 
+// //   MapPin, 
+// //   Globe, 
+// //   Bookmark, 
+// //   Radio, 
+// //   Plus, 
+// //   Bell, 
+// //   Megaphone, 
+// //   Settings, 
+// //   HelpCircle,
+// //   ChevronDown,
+// //   ChevronRight,
+// //   X
+// // } from 'lucide-react';
+// // import { Button } from '@/components/ui/button';
+// // import { Separator } from '@/components/ui/separator';
+// // import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+// // import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+// // import { Link } from 'react-router-dom';
+
+// // interface SidebarProps {
+// //   collapsed: boolean;
+// //   onToggle: () => void;
+// // }
+
+// // const mainNavItems = [
+// //   { icon: Home, label: 'Home', href: '/dashboard', active: true },
+// //   { icon: Calendar, label: 'All Events', href: '/events/all' },
+// //   { icon: MapPin, label: 'Zone Events', href: '/events/zone' },
+// //   { icon: Globe, label: 'Global Events', href: '/events/global' },
+// //   { icon: Bookmark, label: 'Saved Events', href: '/events/saved' },
+// //   { icon: Radio, label: 'Live Now', href: '/events/live', badge: 'LIVE' },
+// // ];
+
+// // const utilityItems = [
+// //   { icon: Bell, label: 'Notifications', href: '/notifications', badge: '3' },
+// //   { icon: Megaphone, label: 'Advertisement Request', href: '/ads' },
+// //   { icon: Settings, label: 'Settings/Preferences', href: '/settings' },
+// //   { icon: HelpCircle, label: 'Help/Contact Support', href: '/help' },
+// // ];
+
+// // const footerSections = [
+// //   {
+// //     title: 'Company',
+// //     items: ['About', 'Press', 'Copyright', 'Contact', 'Creators']
+// //   },
+// //   {
+// //     title: 'Business',
+// //     items: ['Advertise', 'Developers', 'Terms', 'Privacy']
+// //   },
+// //   {
+// //     title: 'Platform',
+// //     items: ['Policy & Safety', 'How Site Works', 'Test New Features']
+// //   }
+// // ];
+
+// // export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
+// //   const [expandedSections, setExpandedSections] = useState<string[]>(['main']);
+
+// //   const toggleSection = (section: string) => {
+// //     setExpandedSections(prev => 
+// //       prev.includes(section) 
+// //         ? prev.filter(s => s !== section)
+// //         : [...prev, section]
+// //     );
+// //   };
+
+// // const SidebarItem = ({ 
+// //   icon: Icon, 
+// //   label, 
+// //   href, 
+// //   active = false, 
+// //   badge 
+// // }: { 
+// //   icon: any; 
+// //   label: string; 
+// //   href: string; 
+// //   active?: boolean; 
+// //   badge?: string; 
+// // }) => {
+// //   const content = (
+// //     <Link
+// //       to={href}
+// //       className={`flex items-center w-full h-12 px-3 transition-colors ${
+// //         active 
+// //           ? 'font-semibold text-[#2C3E94] border-l-2 border-[#2C3E94]' 
+// //           : 'hover:bg-gray-100 hover:text-black text-gray-700 rounded-lg'
+// //       } ${collapsed ? 'justify-center' : ''}`}
+// //     >
+// //       <Icon className={`h-5 w-5 ${collapsed ? '' : 'mr-3'} flex-shrink-0 ${
+// //                       active ? 'text-[#2C3E94]' : 'text-gray-600'
+// //                       }`} />
+// //       {!collapsed && (
+// //         <>
+// //           <span className="flex-1 text-left font-medium">{label}</span>
+// //           {badge && (
+// //             <span className={`text-xs px-2 py-1 rounded-full text-white font-medium bg-[#e74d3c] ${
+// //               badge === 'LIVE' 
+// //                 ? 'bg-live text-live-foreground'
+// //                 : 'bg-muted text-muted-foreground'
+// //             }`}>
+// //               {badge}
+// //             </span>
+// //           )}
+// //         </>
+// //       )}
+// //     </Link>
+// //   );
+
+// //   if (collapsed) {
+// //     return (
+// //       <TooltipProvider>
+// //         <Tooltip>
+// //           <TooltipTrigger asChild>
+// //             {content}
+// //           </TooltipTrigger>
+// //           <TooltipContent side="right" className="ml-2">
+// //             <p>{label}</p>
+// //           </TooltipContent>
+// //         </Tooltip>
+// //       </TooltipProvider>
+// //     );
+// //   }
+
+// //   return content;
+// // };
+
+
+// //   return (
+// //     <aside className={`fixed left-2 top-0 h-full bg-background transition-all duration-300 z-40 ${
+// //       collapsed ? 'w-16' : 'w-64'
+// //     }`}>
+// //       <div className="flex flex-col h-full  pt-[82px]">
+// //         {/* Header */}
+// //         {/* <div className="p-10 border-b border-border">
+// //           {!collapsed ? (
+// //             <div className="flex items-center justify-between">
+// //               <div className="flex items-center space-x-3">
+// //                 <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
+// //                   <span className="text-primary-foreground font-bold font-heading text-sm">PC</span>
+// //                 </div>
+// //                 <div>
+// //                   <h2 className="font-heading font-bold text-sm">PC Community</h2>
+// //                   <p className="text-xs text-muted-foreground">Essential Plan</p>
+// //                 </div>
+// //               </div>
+// //               <Button variant="ghost" size="sm" onClick={onToggle}>
+// //                 <X className="h-4 w-4" />
+// //               </Button>
+// //             </div>
+// //           ) : (
+// //             <div className="flex justify-center">
+// //               <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
+// //                 <span className="text-primary-foreground font-bold font-heading text-sm">PC</span>
+// //               </div>
+// //             </div>
+// //           )}
+// //         </div> */}
+
+// //         {/* Navigation */}
+// //         <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+// //           {/* Main Navigation */}
+// //           <Collapsible 
+// //             open={expandedSections.includes('main')}
+// //             onOpenChange={() => toggleSection('main')}
+// //           >
+// //             <CollapsibleTrigger asChild>
+// //               <Button variant="ghost" className={`w-full justify-between mb-2  hover:bg-gray-100   ${collapsed ? 'hidden' : ''}`}>
+// //                 <span className="font-semibold text-sm text-muted-foreground">MAIN</span>
+// //                 {expandedSections.includes('main') ? (
+// //                   <ChevronDown className="h-4 w-4 text-[#7F8C8D]" />
+// //                 ) : (
+// //                   <ChevronRight className="h-4 w-4 text-[#7F8C8D]" />
+// //                 )}
+// //               </Button>
+// //             </CollapsibleTrigger>
+// //             <CollapsibleContent className="space-y-1">
+// //               {mainNavItems.map((item) => (
+// //                 <SidebarItem key={item.href} {...item} />
+// //               ))}
+// //             </CollapsibleContent>
+// //           </Collapsible>
+
+// //           {/* Create Post Action */}
+// //           <div className="py-4">
+// //             <Button
+// //               className={`w-full gradient-primary hover:shadow-glow transition-all ${
+// //                 collapsed ? 'p-3' : 'px-4 py-3'
+// //               }`}
+// //             >
+// //               <Plus className={`h-5 w-5 ${collapsed ? 'mx-auto' : 'mr-3'}`} />
+// //               {!collapsed && <span className="font-medium">Create Post</span>}
+// //             </Button>
+// //           </div>
+
+// //           <Separator className="my-4" />
+
+// //           {/* Utility Items */}
+// //           {!collapsed && (
+// //             <div className="space-y-1 pb-4">
+// //                 <p className="text-xs font-semibold text-muted-foreground px-3 mb-3">UTILITIES</p>
+// //                 {utilityItems.map((item) => (
+// //                   <SidebarItem key={item.href} {...item} />
+// //                 ))}
+// //             </div>
+// //           )}
+
+// //         {/* Footer */}
+// //         {!collapsed && (
+// //           <div className="px-4 pt-6 pb-4 border-t border-border mt-auto">
+// //             <div className="space-y-4">
+// //               {footerSections.map((section) => (
+// //                 <div key={section.title}>
+// //                   <h4 className="text-xs font-semibold text-muted-foreground mb-2">
+// //                     {section.title.toUpperCase()}
+// //                   </h4>
+// //                   <div className="grid grid-cols-2 gap-1">
+// //                     {section.items.map((item) => (
+// //                       <Link 
+// //                         key={item}
+// //                         to={`/${item.toLowerCase().replace(/\s+/g, '-')}`} 
+// //                         className="block h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+// //                       >
+// //                         {item}
+// //                       </Link>
+
+// //                     ))}
+// //                   </div>
+// //                 </div>
+// //               ))}
+// //             </div>
+// //           </div>
+// //         )}
+
+
+// //       </div>
+
+
+
+// //       </div>
+// //     </aside>
+// //   );
+// // };
+
+// // 
+
+// import { useState } from 'react';
+// import { 
+//   Home, 
+//   Calendar, 
+//   MapPin, 
+//   Globe, 
+//   Bookmark, 
+//   Radio, 
+//   Plus, 
+//   Bell, 
+//   Megaphone, 
+//   Settings, 
+//   HelpCircle,
+//   ChevronDown,
+//   ChevronRight,
+//   X
+// } from 'lucide-react';
+// import { Button } from '@/components/ui/button';
+// import { Separator } from '@/components/ui/separator';
+// import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+// import { Link } from 'react-router-dom';
+
+// interface SidebarProps {
+//   collapsed: boolean;
+//   onToggle: () => void;
+// }
+
+// const mainNavItems = [
+//   { icon: Home, label: 'Home', href: '/dashboard', active: true },
+//   { icon: Calendar, label: 'All Events', href: '/events/all' },
+//   { icon: MapPin, label: 'Zone Events', href: '/events/zone' },
+//   { icon: Globe, label: 'Global Events', href: '/events/global' },
+//   { icon: Bookmark, label: 'Saved Events', href: '/events/saved' },
+// ];
+
+// const liveStreamItems = [
+//   { label: 'Now Live', href: '/events/live/now', badge: 'LIVE' },
+//   { label: 'Recent Live', href: '/events/live/recent' },
+//   { label: 'Upcoming Live', href: '/events/live/upcoming' },
+// ];
+
+// const utilityItems = [
+//   { icon: Bell, label: 'Notifications', href: '/notifications', badge: '3' },
+//   { icon: Megaphone, label: 'Advertisement Request', href: '/ads' },
+//   { icon: Settings, label: 'Settings/Preferences', href: '/settings' },
+//   { icon: HelpCircle, label: 'Help/Contact Support', href: '/help' },
+// ];
+
+// const footerSections = [
+//   {
+//     title: 'Company',
+//     items: ['About', 'Press', 'Copyright', 'Contact', 'Creators']
+//   },
+//   {
+//     title: 'Business',
+//     items: ['Advertise', 'Developers', 'Terms', 'Privacy']
+//   },
+//   {
+//     title: 'Platform',
+//     items: ['Policy & Safety', 'How Site Works', 'Test New Features']
+//   }
+// ];
+
+// export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
+//   const [liveStreamsExpanded, setLiveStreamsExpanded] = useState(false);
+
+//   const toggleLiveStreams = () => {
+//     setLiveStreamsExpanded(prev => !prev);
+//   };
+
+// const SidebarItem = ({ 
+//   icon: Icon, 
+//   label, 
+//   href, 
+//   active = false, 
+//   badge 
+// }: { 
+//   icon: any; 
+//   label: string; 
+//   href: string; 
+//   active?: boolean; 
+//   badge?: string; 
+// }) => {
+//   const content = (
+//     <Link
+//       to={href}
+//       className={`flex items-center w-full h-12 px-3 transition-colors ${
+//         active 
+//           ? 'font-semibold text-[#2C3E94] border-l-2 border-[#2C3E94]' 
+//           : 'hover:bg-gray-100 hover:text-black text-gray-700 rounded-lg'
+//       } ${collapsed ? 'justify-center' : ''}`}
+//     >
+//       <Icon className={`h-5 w-5 ${collapsed ? '' : 'mr-3'} flex-shrink-0 ${
+//                       active ? 'text-[#2C3E94]' : 'text-gray-600'
+//                       }`} />
+//       {!collapsed && (
+//         <>
+//           <span className="flex-1 text-left font-medium">{label}</span>
+//           {badge && (
+//             <span className={`text-xs px-2 py-1 rounded-full text-white font-medium bg-[#e74d3c] ${
+//               badge === 'LIVE' 
+//                 ? 'bg-live text-live-foreground'
+//                 : 'bg-muted text-muted-foreground'
+//             }`}>
+//               {badge}
+//             </span>
+//           )}
+//         </>
+//       )}
+//     </Link>
+//   );
+
+//   if (collapsed) {
+//     return (
+//       <TooltipProvider>
+//         <Tooltip>
+//           <TooltipTrigger asChild>
+//             {content}
+//           </TooltipTrigger>
+//           <TooltipContent side="right" className="ml-2">
+//             <p>{label}</p>
+//           </TooltipContent>
+//         </Tooltip>
+//       </TooltipProvider>
+//     );
+//   }
+
+//   return content;
+// };
+
+// const LiveStreamsDropdown = () => {
+//   if (collapsed) {
+//     return (
+//       <TooltipProvider>
+//         <Tooltip>
+//           <TooltipTrigger asChild>
+//             <Link
+//               to="/events/live/now"
+//               className="flex items-center justify-center w-full h-12 px-3 transition-colors hover:bg-gray-100 hover:text-black text-gray-700 rounded-lg"
+//             >
+//               <Radio className="h-5 w-5 flex-shrink-0 text-gray-600" />
+//             </Link>
+//           </TooltipTrigger>
+//           <TooltipContent side="right" className="ml-2">
+//             <p>Live Streams</p>
+//           </TooltipContent>
+//         </Tooltip>
+//       </TooltipProvider>
+//     );
+//   }
+
+//   return (
+//     <div>
+//       <button
+//         onClick={toggleLiveStreams}
+//         className="flex items-center w-full h-12 px-3 transition-colors hover:bg-gray-100 hover:text-black text-gray-700 rounded-lg"
+//       >
+//         <Radio className="h-5 w-5 mr-3 flex-shrink-0 text-gray-600" />
+//         <span className="flex-1 text-left font-medium">Live Streams</span>
+//         {liveStreamsExpanded ? (
+//           <ChevronDown className="h-4 w-4 text-gray-600" />
+//         ) : (
+//           <ChevronRight className="h-4 w-4 text-gray-600" />
+//         )}
+//       </button>
+      
+//       {liveStreamsExpanded && (
+//         <div className="ml-8 space-y-1 mt-1">
+//           {liveStreamItems.map((item) => (
+//             <Link
+//               key={item.href}
+//               to={item.href}
+//               className="flex items-center w-full h-10 px-3 transition-colors hover:bg-gray-100 hover:text-black text-gray-600 rounded-lg text-sm"
+//             >
+//               <span className="flex-1 text-left">{item.label}</span>
+//               {item.badge && (
+//                 <span className="text-xs px-2 py-1 rounded-full text-white font-medium bg-[#e74d3c]">
+//                   {item.badge}
+//                 </span>
+//               )}
+//             </Link>
+//           ))}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+//   return (
+//     <aside className={`fixed left-2 top-0 h-full bg-background transition-all duration-300 z-40 ${
+//       collapsed ? 'w-16' : 'w-64'
+//     }`}>
+//       <div className="flex flex-col h-full pt-[82px]">
+//         {/* Navigation */}
+//         <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+//           {/* Main Navigation - Always Visible */}
+//           <div className="space-y-1 mb-4">
+//             {mainNavItems.map((item) => (
+//               <SidebarItem key={item.href} {...item} />
+//             ))}
+//             <LiveStreamsDropdown />
+//           </div>
+
+//           {/* Create Post Action */}
+//           <div className="py-4">
+//             <Button
+//               className={`w-full gradient-primary hover:shadow-glow transition-all ${
+//                 collapsed ? 'p-3' : 'px-4 py-3'
+//               }`}
+//             >
+//               <Plus className={`h-5 w-5 ${collapsed ? 'mx-auto' : 'mr-3'}`} />
+//               {!collapsed && <span className="font-medium">Create Post</span>}
+//             </Button>
+//           </div>
+
+//           <Separator className="my-4" />
+
+//           {/* Utility Items */}
+//           {!collapsed && (
+//             <div className="space-y-1 pb-4">
+//                 <p className="text-xs font-semibold text-muted-foreground px-3 mb-3">UTILITIES</p>
+//                 {utilityItems.map((item) => (
+//                   <SidebarItem key={item.href} {...item} />
+//                 ))}
+//             </div>
+//           )}
+
+//         {/* Footer */}
+//         {!collapsed && (
+//           <div className="px-4 pt-6 pb-4 border-t border-border mt-auto">
+//             <div className="space-y-4">
+//               {footerSections.map((section) => (
+//                 <div key={section.title}>
+//                   <h4 className="text-xs font-semibold text-muted-foreground mb-2">
+//                     {section.title.toUpperCase()}
+//                   </h4>
+//                   <div className="grid grid-cols-2 gap-1">
+//                     {section.items.map((item) => (
+//                       <Link 
+//                         key={item}
+//                         to={`/${item.toLowerCase().replace(/\s+/g, '-')}`} 
+//                         className="block h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+//                       >
+//                         {item}
+//                       </Link>
+
+//                     ))}
+//                   </div>
+//                 </div>
+//               ))}
+//             </div>
+//           </div>
+//         )}
+
+//       </div>
+//       </div>
+//     </aside>
+//   );
+// };
+
+// // "use client"
+
+// // import { useState } from "react"
+// // import { EventCard } from "./EventCard"
+// // // import { CardStack } from "./EventStack"
+// // import { cn } from "@/lib/utils";
+// // import { EventStack } from "./EventStack";
+
+// // // Mock event data
+// // const events = [
+// //   {
+// //     id: 1,
+// //     title: "Tech Conference 2024",
+// //     date: "2024-03-15",
+// //     time: "09:00 AM",
+// //     location: "San Francisco, CA",
+// //     category: "Technology",
+// //     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+// //     description: "Join industry leaders for cutting-edge tech discussions and networking.",
+// //     attendees: 250,
+// //   },
+  
+// //   {
+// //     id: 2,
+// //     title: "AI Workshop Series",
+// //     date: "2024-03-18",
+// //     time: "02:00 PM",
+// //     location: "Online",
+// //     category: "Technology",
+// //     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+// //     description: "Hands-on workshop covering machine learning fundamentals.",
+// //     attendees: 150,
+// //   },
+// //   {
+// //     id: 3,
+// //     title: "Design Thinking Summit",
+// //     date: "2024-03-20",
+// //     time: "10:00 AM",
+// //     location: "New York, NY",
+// //     category: "Design",
+// //     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+// //     description: "Explore innovative design methodologies and user experience.",
+// //     attendees: 180,
+// //   },
+// //   {
+// //     id: 4,
+// //     title: "UX/UI Masterclass",
+// //     date: "2024-03-22",
+// //     time: "01:00 PM",
+// //     location: "Los Angeles, CA",
+// //     category: "Design",
+// //     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+// //     description: "Advanced techniques for modern interface design.",
+// //     attendees: 120,
+// //   },
+// //   {
+// //     id: 5,
+// //     title: "Marketing Analytics Deep Dive",
+// //     date: "2024-03-25",
+// //     time: "11:00 AM",
+// //     location: "Chicago, IL",
+// //     category: "Marketing",
+// //     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+// //     description: "Data-driven strategies for modern marketing campaigns.",
+// //     attendees: 200,
+// //   },
+// //   {
+// //     id: 6,
+// //     title: "Content Strategy Workshop",
+// //     date: "2024-03-28",
+// //     time: "03:00 PM",
+// //     location: "Austin, TX",
+// //     category: "Marketing",
+// //     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+// //     description: "Build compelling content that converts and engages.",
+// //     attendees: 90,
+// //   },
+// //     {
+// //     id: 7,
+// //     title: "Tech Conference 2024",
+// //     date: "2024-03-15",
+// //     time: "09:00 AM",
+// //     location: "San Francisco, CA",
+// //     category: "Technology",
+// //     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+// //     description: "Join industry leaders for cutting-edge tech discussions and networking.",
+// //     attendees: 250,
+// //   },
+
+// //     {
+// //     id: 8,
+// //     title: "Tech Conference 2024",
+// //     date: "2024-03-15",
+// //     time: "09:00 AM",
+// //     location: "San Francisco, CA",
+// //     category: "Technology",
+// //     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+// //     description: "Join industry leaders for cutting-edge tech discussions and networking.",
+// //     attendees: 250,
+// //   },
+// //     {
+// //     id: 9,
+// //     title: "Tech Conference 2024",
+// //     date: "2024-03-15",
+// //     time: "09:00 AM",
+// //     location: "San Francisco, CA",
+// //     category: "Technology",
+// //     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+// //     description: "Join industry leaders for cutting-edge tech discussions and networking.",
+// //     attendees: 250,
+// //   },
+// // ]
+
+// // // export const Highlight = ({
+// // //   children,
+// // //   className,
+// // // }: {
+// // //   children: React.ReactNode;
+// // //   className?: string;
+// // // }) => {
+// // //   return (
+// // //     <span
+// // //       className={cn(
+// // //         "font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-700/[0.2] dark:text-emerald-500 px-1 py-0.5",
+// // //         className
+// // //       )}
+// // //     >
+// // //       {children}
+// // //     </span>
+// // //   );
+// // // };
+
+// // // const CARDS = [
+// // //   {
+// // //     id: 0,
+// // //     name: "Manu Arora",
+// // //     designation: "Senior Software Engineer",
+// // //     content: (
+// // //       <p>
+// // //         These cards are amazing, <Highlight>I want to use them</Highlight> in my
+// // //         project. Framer motion is a godsend ngl tbh fam 🙏
+// // //       </p>
+// // //     ),
+// // //   },
+// // //   {
+// // //     id: 1,
+// // //     name: "Elon Musk",
+// // //     designation: "Senior Shitposter",
+// // //     content: (
+// // //       <p>
+// // //         I dont like this Twitter thing,{" "}
+// // //         <Highlight>deleting it right away</Highlight> because yolo. Instead, I
+// // //         would like to call it <Highlight>X.com</Highlight> so that it can easily
+// // //         be confused with adult sites.
+// // //       </p>
+// // //     ),
+// // //   },
+// // //   {
+// // //     id: 2,
+// // //     name: "Tyler Durden",
+// // //     designation: "Manager Project Mayhem",
+// // //     content: (
+// // //       <p>
+// // //         The first rule of
+// // //         <Highlight>Fight Club</Highlight> is that you do not talk about fight
+// // //         club. The second rule of
+// // //         <Highlight>Fight club</Highlight> is that you DO NOT TALK about fight
+// // //         club.
+// // //       </p>
+// // //     ),
+// // //   },
+// // // ];
+
+// // export function EventsGrid() {
+
+// //   return (
+// //     <div className="space-y-6">
+
+// //         {/* Grid view - all events in a grid */}
+// //         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+// //           {events.map((event) => (
+// //             <EventCard key={event.id} event={event} />
+// //           ))}
+// //         </div>
+// //         <EventStack />
+
+// //     </div>
+// //   )
+// // }
+
+// "use client"
+
+// import { useState, useMemo } from "react"
+// import { EventCard } from "./EventCard"
+// import { EventStack } from "./EventStack"
+// import { cn } from "@/lib/utils"
+
+// // Mock event data
+// const events = [
+//   {
+//     id: 1,
+//     title: "Tech Conference 2024",
+//     date: "2024-03-15",
+//     time: "09:00 AM",
+//     location: "San Francisco, CA",
+//     category: "Technology",
+//     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//     description: "Join industry leaders for cutting-edge tech discussions and networking.",
+//     attendees: 250,
+//   },
+//   {
+//     id: 2,
+//     title: "AI Workshop Series",
+//     date: "2024-03-18",
+//     time: "02:00 PM",
+//     location: "Online",
+//     category: "Technology",
+//     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//     description: "Hands-on workshop covering machine learning fundamentals.",
+//     attendees: 150,
+//   },
+//   {
+//     id: 3,
+//     title: "Design Thinking Summit",
+//     date: "2024-03-20",
+//     time: "10:00 AM",
+//     location: "New York, NY",
+//     category: "Design",
+//     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//     description: "Explore innovative design methodologies and user experience.",
+//     attendees: 180,
+//   },
+//   {
+//     id: 4,
+//     title: "UX/UI Masterclass",
+//     date: "2024-03-22",
+//     time: "01:00 PM",
+//     location: "Los Angeles, CA",
+//     category: "Design",
+//     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//     description: "Advanced techniques for modern interface design.",
+//     attendees: 120,
+//   },
+//   {
+//     id: 5,
+//     title: "Marketing Analytics Deep Dive",
+//     date: "2024-03-25",
+//     time: "11:00 AM",
+//     location: "Chicago, IL",
+//     category: "Marketing",
+//     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//     description: "Data-driven strategies for modern marketing campaigns.",
+//     attendees: 200,
+//   },
+//   {
+//     id: 6,
+//     title: "Content Strategy Workshop",
+//     date: "2024-03-28",
+//     time: "03:00 PM",
+//     location: "Austin, TX",
+//     category: "Marketing",
+//     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//     description: "Build compelling content that converts and engages.",
+//     attendees: 90,
+//   },
+//   {
+//     id: 7,
+//     title: "DevOps Summit",
+//     date: "2024-04-01",
+//     time: "09:00 AM",
+//     location: "Seattle, WA",
+//     category: "Technology",
+//     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//     description: "Modern deployment and infrastructure strategies.",
+//     attendees: 300,
+//   },
+//   {
+//     id: 8,
+//     title: "Creative Workshop",
+//     date: "2024-04-05",
+//     time: "02:00 PM",
+//     location: "Portland, OR",
+//     category: "Design",
+//     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//     description: "Unleash your creativity with hands-on design exercises.",
+//     attendees: 75,
+//   },
+//   {
+//     id: 9,
+//     title: "Digital Marketing Trends",
+//     date: "2024-04-10",
+//     time: "11:00 AM",
+//     location: "Denver, CO",
+//     category: "Marketing",
+//     image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//     description: "Stay ahead with the latest marketing trends and strategies.",
+//     attendees: 160,
+//   },
+// ]
+
+// // Available categories for event stacks
+// const availableCategories = ["Technology", "Design", "Marketing"]
+
+// export function EventsGrid() {
+//   // Generate random positions for event stacks
+//   const gridItemsWithStacks = useMemo(() => {
+//     const items = []
+//     let eventIndex = 0
+    
+//     // Calculate total grid positions (assuming we want about 12-15 items total)
+//     const totalPositions = Math.max(12, events.length + availableCategories.length)
+    
+//     // Generate random positions for event stacks (ensure they're spread out)
+//     const stackPositions = new Set()
+//     const numStacks = Math.min(availableCategories.length, 3) // Max 3 stacks
+//     const minDistanceBetweenStacks = 4 // Minimum 4 positions between stacks
+    
+//     // First stack position (not in first 3 positions)
+//     let attempts = 0
+//     while (stackPositions.size < numStacks && attempts < 50) {
+//       const randomPos = stackPositions.size === 0 
+//         ? Math.floor(Math.random() * (totalPositions - 6)) + 3 // First stack starts from position 3
+//         : Math.floor(Math.random() * totalPositions)
+      
+//       // Check if position is far enough from existing stacks
+//       let validPosition = true
+//       for (const existingPos of stackPositions) {
+//         if (Math.abs(randomPos - existingPos) < minDistanceBetweenStacks) {
+//           validPosition = false
+//           break
+//         }
+//       }
+      
+//       if (validPosition && randomPos < totalPositions - 2) { // Ensure not in last 2 positions
+//         stackPositions.add(randomPos)
+//       }
+//       attempts++
+//     }
+    
+//     const stackPositionsArray = Array.from(stackPositions).sort((a, b) => a - b)
+//     let stackIndex = 0
+    
+//     // Fill the grid
+//     for (let i = 0; i < totalPositions; i++) {
+//       if (stackPositionsArray.includes(i) && stackIndex < availableCategories.length) {
+//         // Add event stack
+//         items.push({
+//           type: 'stack',
+//           key: `stack-${availableCategories[stackIndex]}`,
+//           category: availableCategories[stackIndex],
+//         })
+//         stackIndex++
+//       } else if (eventIndex < events.length) {
+//         // Add regular event card
+//         items.push({
+//           type: 'event',
+//           key: `event-${events[eventIndex].id}`,
+//           event: events[eventIndex],
+//         })
+//         eventIndex++
+//       }
+//     }
+    
+//     return items
+//   }, []) // Empty dependency array to maintain stable positions
+
+//   return (
+//     <div className="space-y-6">
+//       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//         {gridItemsWithStacks.map((item) => {
+//           if (item.type === 'stack') {
+//             return (
+//               <div key={item.key} className="flex justify-center">
+//                 <EventStack 
+//                   category={item.category}
+//                   className="transform hover:scale-105 transition-transform duration-300"
+//                 />
+//               </div>
+//             )
+//           } else {
+//             return (
+//               <EventCard key={item.key} event={item.event} />
+//             )
+//           }
+//         })}
+//       </div>
+//     </div>
+//   )
+// }
+
+// "use client"
+
+// import { useState, useMemo, useEffect } from "react"
+// import { EventCard } from "./EventCard"
+// import { EventStack } from "./EventStack"
+// import { cn } from "@/lib/utils"
+
+// export function EventsGrid({ 
+//   pageType = "all", // "all", "zone", "global", "saved"
+//   userId = null,
+//   zoneId = null,
+//   showStacks = true,
+//   stackCategories = ["Technology", "Design", "Marketing"],
+//   className = "",
+//   events = null, // Allow passing events directly
+//   loading = false,
+//   error = null
+// }) {
+//   const [allEvents, setAllEvents] = useState(events || [])
+//   const [isLoading, setIsLoading] = useState(loading)
+//   const [fetchError, setFetchError] = useState(error)
+
+//   // Fetch events based on page type
+//   useEffect(() => {
+//     if (events) {
+//       setAllEvents(events)
+//       return
+//     }
+
+//     const fetchEvents = async () => {
+//       setIsLoading(true)
+//       setFetchError(null)
+      
+//       try {
+//         let endpoint = ""
+//         let queryParams = new URLSearchParams()
+
+//         switch (pageType) {
+//           case "zone":
+//             endpoint = `/api/zones/${zoneId}/events`
+//             break
+//           case "global":
+//             endpoint = "/api/events/global" // or "/api/community/events"
+//             break
+//           case "saved":
+//             endpoint = `/api/users/${userId}/saved-events`
+//             break
+//           case "all":
+//           default:
+//             endpoint = "/api/events"
+//             break
+//         }
+
+//         const response = await fetch(`${endpoint}?${queryParams}`)
+//         if (!response.ok) {
+//           throw new Error(`Failed to fetch events: ${response.statusText}`)
+//         }
+        
+//         const fetchedEvents = await response.json()
+//         setAllEvents(fetchedEvents.events || fetchedEvents) // Handle different API response formats
+//       } catch (err) {
+//         setFetchError(err.message)
+//         console.error("Error fetching events:", err)
+//       } finally {
+//         setIsLoading(false)
+//       }
+//     }
+
+//     fetchEvents()
+//   }, [pageType, userId, zoneId, events])
+
+//   // Configure stacks based on page type
+//   const getStackConfig = () => {
+//     switch (pageType) {
+//       case "zone":
+//         return {
+//           show: showStacks,
+//           categories: stackCategories,
+//           maxStacks: 2, // Fewer stacks for zone-specific events
+//           apiEndpoint: `/api/zones/${zoneId}/categories`
+//         }
+//       case "global":
+//         return {
+//           show: showStacks,
+//           categories: ["Community", "Networking", "Workshop"],
+//           maxStacks: 3,
+//           apiEndpoint: "/api/categories/global"
+//         }
+//       case "saved":
+//         return {
+//           show: false, // No stacks for saved events - just show saved events
+//           categories: [],
+//           maxStacks: 0
+//         }
+//       case "all":
+//       default:
+//         return {
+//           show: showStacks,
+//           categories: stackCategories,
+//           maxStacks: 3,
+//           apiEndpoint: "/api/categories"
+//         }
+//     }
+//   }
+
+//   const stackConfig = getStackConfig()
+
+//   // Generate grid layout with appropriate spacing for stacks
+//   const gridItemsWithStacks = useMemo(() => {
+//     if (allEvents.length === 0) return []
+    
+//     const items = []
+//     let eventIndex = 0
+    
+//     // Calculate total positions
+//     const basePositions = Math.max(12, allEvents.length + (stackConfig.show ? stackConfig.maxStacks : 0))
+//     const totalPositions = Math.min(basePositions, allEvents.length + stackConfig.maxStacks + 3)
+    
+//     if (!stackConfig.show || stackConfig.maxStacks === 0) {
+//       // No stacks - just return events
+//       return allEvents.map(event => ({
+//         type: 'event',
+//         key: `event-${event.id}`,
+//         event: event,
+//       }))
+//     }
+
+//     // Generate stack positions with proper spacing
+//     const stackPositions = new Set()
+//     const minDistanceBetweenStacks = pageType === "zone" ? 5 : 4
+    
+//     let attempts = 0
+//     while (stackPositions.size < stackConfig.maxStacks && attempts < 50) {
+//       const randomPos = stackPositions.size === 0 
+//         ? Math.floor(Math.random() * (totalPositions - 8)) + 3
+//         : Math.floor(Math.random() * totalPositions)
+      
+//       let validPosition = true
+//       for (const existingPos of stackPositions) {
+//         if (Math.abs(randomPos - existingPos) < minDistanceBetweenStacks) {
+//           validPosition = false
+//           break
+//         }
+//       }
+      
+//       if (validPosition && randomPos < totalPositions - 2) {
+//         stackPositions.add(randomPos)
+//       }
+//       attempts++
+//     }
+    
+//     const stackPositionsArray = Array.from(stackPositions).sort((a, b) => a - b)
+//     let stackIndex = 0
+    
+//     // Fill the grid
+//     for (let i = 0; i < totalPositions; i++) {
+//       if (stackPositionsArray.includes(i) && stackIndex < stackConfig.categories.length) {
+//         items.push({
+//           type: 'stack',
+//           key: `stack-${stackConfig.categories[stackIndex]}-${pageType}`,
+//           category: stackConfig.categories[stackIndex],
+//         })
+//         stackIndex++
+//       } else if (eventIndex < allEvents.length) {
+//         items.push({
+//           type: 'event',
+//           key: `event-${allEvents[eventIndex].id}`,
+//           event: allEvents[eventIndex],
+//         })
+//         eventIndex++
+//       }
+//     }
+    
+//     return items
+//   }, [allEvents, stackConfig, pageType])
+
+//   // Loading state
+//   if (isLoading) {
+//     return (
+//       <div className={cn("space-y-6", className)}>
+//         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//           {[...Array(6)].map((_, i) => (
+//             <div key={i} className="bg-muted animate-pulse rounded-lg h-64" />
+//           ))}
+//         </div>
+//       </div>
+//     )
+//   }
+
+//   // Error state
+//   if (fetchError) {
+//     return (
+//       <div className={cn("space-y-6", className)}>
+//         <div className="text-center py-12">
+//           <p className="text-muted-foreground mb-4">Failed to load events</p>
+//           <p className="text-sm text-red-500">{fetchError}</p>
+//         </div>
+//       </div>
+//     )
+//   }
+
+//   // Empty state
+//   if (allEvents.length === 0) {
+//     const emptyMessages = {
+//       all: "No events found. Check back later for upcoming events.",
+//       zone: "No events in this zone yet. Be the first to create one!",
+//       global: "No community events available at the moment.",
+//       saved: "You haven't saved any events yet. Browse events and save your favorites!"
+//     }
+
+//     return (
+//       <div className={cn("space-y-6", className)}>
+//         <div className="text-center py-12">
+//           <p className="text-muted-foreground">
+//             {emptyMessages[pageType]}
+//           </p>
+//         </div>
+//       </div>
+//     )
+//   }
+
+//   return (
+//     <div className={cn("space-y-6", className)}>
+//       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//         {gridItemsWithStacks.map((item) => {
+//           if (item.type === 'stack') {
+//             return (
+//               <div key={item.key} className="flex justify-center">
+//                 <EventStack 
+//                   category={item.category}
+//                   pageType={pageType}
+//                   zoneId={zoneId}
+//                   apiEndpoint={stackConfig.apiEndpoint}
+//                   className="transform hover:scale-105 transition-transform duration-300"
+//                 />
+//               </div>
+//             )
+//           } else {
+//             return (
+//               <EventCard 
+//                 key={item.key} 
+//                 event={item.event}
+//                 pageType={pageType}
+//                 showSaveButton={pageType !== "saved"}
+//               />
+//             )
+//           }
+//         })}
+//       </div>
+//     </div>
+//   )
+// }
+
+
+  // useEffect(() => {
+  //   const fetchCategoryEvents = async () => {
+  //     setIsLoading(true)
+  //     try {
+  //       let endpoint = ""
+        
+  //       // Determine API endpoint based on page type
+  //       switch (pageType) {
+  //         case "zone":
+  //           endpoint = `/api/zones/${zoneId}/categories/${category}/events`
+  //           break
+  //         case "global":
+  //           endpoint = `/api/categories/${category}/events?type=global`
+  //           break
+  //         case "all":
+  //         default:
+  //           endpoint = `/api/categories/${category}/events`
+  //           break
+  //       }
+
+  //       // const response = await fetch(endpoint)
+  //       // const events = await response.json()
+        
+  //       // For now, using mock data with different categories per page type
+  //       let events: Event[] = []
+  //       // if (pageType === "zone") {
+  //       //   events = mockCategoryEvents[category]?.slice(0, 3) || [] // Fewer events for zone
+  //       // } else if (pageType === "global") {
+  //       //   events = mockCategoryEvents[category] || []
+  //       // } else {
+  //       //   events = mockCategoryEvents[category] || []
+  //       // }
+        
+  //       setIsLoading(false)
+  //       const formattedEvents = events.map(event => ({
+  //         id: event.id,
+  //         name: event.title,
+  //         designation: `${event.date} at ${event.time} • ${event.location}`,
+  //         content: (
+  //           <div className="relative w-full h-[10rem] rounded-xl overflow-hidden group">
+  //             <img 
+  //               src={event.image} 
+  //               alt={event.title}
+  //               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+  //             />
+  //             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
+  //             <div className="absolute top-3 right-3">
+  //               <Badge variant="secondary" className="bg-white/90 text-black hover:bg-white">
+  //                 {pageType === "zone" ? "Zone" : pageType === "global" ? "Global" : event.category}
+  //               </Badge>
+  //             </div>
+  //             <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+  //               <p className="text-white text-sm line-clamp-2">
+  //                 {event.description}
+  //               </p>
+  //             </div>
+  //           </div>
+  //         ),
+  //       }))
+        
+  //       setCategoryEvents(formattedEvents)
+  //     } catch (error: any) {
+  //       console.error("Error fetching category events:", error)
+  //       setCategoryEvents([])
+  //       setIsLoading(false)
+  //     }
+  //   }
+    
+  //   fetchCategoryEvents()
+  // }, [category, pageType, zoneId])
+
+  //Event stack code:
+  // "use client"
+
+// import { useState, useEffect } from "react"
+// import { CardStack } from "@/components/ui/card-stack"
+// import { Badge } from "@/components/ui/badge"
+// import { CalendarDays, MapPin } from "lucide-react"
+// import { cn } from "@/lib/utils"
+
+// // This would typically come from your API
+// const mockCategoryEvents = {
+//   "Technology": [
+//     {
+//       id: 1,
+//       title: "AI Workshop Series",
+//       date: "2024-03-18",
+//       time: "02:00 PM",
+//       location: "Online",
+//       category: "Technology",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Hands-on workshop covering machine learning fundamentals.",
+//     },
+//     {
+//       id: 2,
+//       title: "Tech Conference 2024",
+//       date: "2024-03-15",
+//       time: "09:00 AM",
+//       location: "San Francisco, CA",
+//       category: "Technology",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Join industry leaders for cutting-edge tech discussions.",
+//     },
+//     {
+//       id: 3,
+//       title: "DevOps Summit",
+//       date: "2024-03-22",
+//       time: "10:00 AM",
+//       location: "Seattle, WA",
+//       category: "Technology",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Modern deployment and infrastructure strategies.",
+//     },
+//   ],
+//   "Design": [
+//     {
+//       id: 4,
+//       title: "Design Thinking Summit",
+//       date: "2024-03-20",
+//       time: "10:00 AM",
+//       location: "New York, NY",
+//       category: "Design",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Explore innovative design methodologies.",
+//     },
+//     {
+//       id: 5,
+//       title: "UX/UI Masterclass",
+//       date: "2024-03-22",
+//       time: "01:00 PM",
+//       location: "Los Angeles, CA",
+//       category: "Design",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Advanced techniques for modern interface design.",
+//     },
+//   ],
+//   "Marketing": [
+//     {
+//       id: 6,
+//       title: "Marketing Analytics Deep Dive",
+//       date: "2024-03-25",
+//       time: "11:00 AM",
+//       location: "Chicago, IL",
+//       category: "Marketing",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Data-driven strategies for modern marketing.",
+//     },
+//     {
+//       id: 7,
+//       title: "Content Strategy Workshop",
+//       date: "2024-03-28",
+//       time: "03:00 PM",
+//       location: "Austin, TX",
+//       category: "Marketing",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Build compelling content that converts.",
+//     },
+//   ]
+// }
+
+// export function EventStack({ category = "Technology", className }) {
+//   const [categoryEvents, setCategoryEvents] = useState([])
+
+//   useEffect(() => {
+//     // In a real app, you would fetch from your categories API here
+//     // const fetchCategoryEvents = async () => {
+//     //   const response = await fetch(`/api/categories/${category}/events`)
+//     //   const events = await response.json()
+//     //   setCategoryEvents(events)
+//     // }
+    
+//     // For now, using mock data
+//     const events = mockCategoryEvents[category] || []
+//     const formattedEvents = events.map(event => ({
+//       id: event.id,
+//       name: event.title,
+//       designation: `${event.date} at ${event.time} • ${event.location}`,
+//       content: (
+//         <div className="relative w-full h-40 rounded-xl overflow-hidden group">
+//           <img 
+//             src={event.image} 
+//             alt={event.title}
+//             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+//           />
+//           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
+//           <div className="absolute top-3 right-3">
+//             <Badge variant="secondary" className="bg-white/90 text-black hover:bg-white">
+//               {event.category}
+//             </Badge>
+//           </div>
+//           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+//             <p className="text-white text-sm line-clamp-2">
+//               {event.description}
+//             </p>
+//           </div>
+//         </div>
+//       ),
+//     }))
+    
+//     setCategoryEvents(formattedEvents)
+//   }, [category])
+
+//   // Generate concatenated title for the bottom (like YouTube mix playlists)
+//   const concatenatedTitles = categoryEvents
+//     .map(event => event.name)
+//     .join(" • ")
+
+//   if (categoryEvents.length === 0) return null
+
+//   return (
+//     <div className={cn("relative", className)}>
+//       <div className="flex flex-col items-center">
+//         {/* Card Stack */}
+//         <div className="relative">
+//           <CardStack 
+//             items={categoryEvents} 
+//             offset={8} 
+//             scaleFactor={0.06} 
+//           />
+//         </div>
+        
+//         {/* Category Badge and Title */}
+//         <div className="mt-4 text-center max-w-xs">
+//           <div className="flex items-center justify-center gap-2 mb-2">
+//             <Badge variant="outline" className="text-xs">
+//               {category} Mix
+//             </Badge>
+//             <span className="text-xs text-muted-foreground">
+//               {categoryEvents.length} events
+//             </span>
+//           </div>
+          
+//           {/* Concatenated titles like YouTube */}
+//           <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+//             {concatenatedTitles}
+//           </p>
+//         </div>
+//       </div>
+//     </div>
+//   )
+// }
+
+// "use client"
+
+// import { useState, useEffect } from "react"
+// import { CardStack } from "@/components/ui/card-stack"
+// import { Badge } from "@/components/ui/badge"
+// import { CalendarDays, MapPin } from "lucide-react"
+// import { cn } from "@/lib/utils"
+
+// // This would typically come from your API
+// const mockCategoryEvents = {
+//   "Technology": [
+//     {
+//       id: 1,
+//       title: "AI Workshop Series",
+//       date: "2024-03-18",
+//       time: "02:00 PM",
+//       location: "Online",
+//       category: "Technology",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Hands-on workshop covering machine learning fundamentals.",
+//     },
+//     {
+//       id: 2,
+//       title: "Tech Conference 2024",
+//       date: "2024-03-15",
+//       time: "09:00 AM",
+//       location: "San Francisco, CA",
+//       category: "Technology",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Join industry leaders for cutting-edge tech discussions.",
+//     },
+//     {
+//       id: 3,
+//       title: "DevOps Summit",
+//       date: "2024-03-22",
+//       time: "10:00 AM",
+//       location: "Seattle, WA",
+//       category: "Technology",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Modern deployment and infrastructure strategies.",
+//     },
+//   ],
+//   "Design": [
+//     {
+//       id: 4,
+//       title: "Design Thinking Summit",
+//       date: "2024-03-20",
+//       time: "10:00 AM",
+//       location: "New York, NY",
+//       category: "Design",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Explore innovative design methodologies.",
+//     },
+//     {
+//       id: 5,
+//       title: "UX/UI Masterclass",
+//       date: "2024-03-22",
+//       time: "01:00 PM",
+//       location: "Los Angeles, CA",
+//       category: "Design",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Advanced techniques for modern interface design.",
+//     },
+//   ],
+//   "Marketing": [
+//     {
+//       id: 6,
+//       title: "Marketing Analytics Deep Dive",
+//       date: "2024-03-25",
+//       time: "11:00 AM",
+//       location: "Chicago, IL",
+//       category: "Marketing",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Data-driven strategies for modern marketing.",
+//     },
+//     {
+//       id: 7,
+//       title: "Content Strategy Workshop",
+//       date: "2024-03-28",
+//       time: "03:00 PM",
+//       location: "Austin, TX",
+//       category: "Marketing",
+//       image: "https://ventureburn.com/wp-content/uploads/2019/12/aa-1024x576.jpg",
+//       description: "Build compelling content that converts.",
+//     },
+//   ]
+// }
+
+// export function EventStack({ 
+//   category = "Technology", 
+//   className,
+//   pageType = "all",
+//   zoneId = null,
+//   apiEndpoint = "/api/categories"
+// }) {
+//   const [categoryEvents, setCategoryEvents] = useState([])
+//   const [isLoading, setIsLoading] = useState(true)
+
+//   useEffect(() => {
+//     const fetchCategoryEvents = async () => {
+//       setIsLoading(true)
+//       try {
+//         let endpoint = ""
+        
+//         // Determine API endpoint based on page type
+//         switch (pageType) {
+//           case "zone":
+//             endpoint = `/api/zones/${zoneId}/categories/${category}/events`
+//             break
+//           case "global":
+//             endpoint = `/api/categories/${category}/events?type=global`
+//             break
+//           case "all":
+//           default:
+//             endpoint = `/api/categories/${category}/events`
+//             break
+//         }
+
+//         // const response = await fetch(endpoint)
+//         // const events = await response.json()
+        
+//         // For now, using mock data with different categories per page type
+//         let events = []
+//         if (pageType === "zone") {
+//           events = mockCategoryEvents[category]?.slice(0, 3) || [] // Fewer events for zone
+//         } else if (pageType === "global") {
+//           events = mockCategoryEvents[category] || []
+//         } else {
+//           events = mockCategoryEvents[category] || []
+//         }
+        
+//         setIsLoading(false)
+//         const formattedEvents = events.map(event => ({
+//           id: event.id,
+//           name: event.title,
+//           designation: `${event.date} at ${event.time} • ${event.location}`,
+//           content: (
+//             <div className="relative w-full h-48 rounded-xl overflow-hidden group">
+//               <img 
+//                 src={event.image} 
+//                 alt={event.title}
+//                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+//               />
+//               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
+//               <div className="absolute top-3 right-3">
+//                 <Badge variant="secondary" className="bg-white/90 text-black hover:bg-white">
+//                   {pageType === "zone" ? "Zone" : pageType === "global" ? "Global" : event.category}
+//                 </Badge>
+//               </div>
+//               <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+//                 <p className="text-white text-sm line-clamp-2">
+//                   {event.description}
+//                 </p>
+//               </div>
+//             </div>
+//           ),
+//         }))
+        
+//         setCategoryEvents(formattedEvents)
+//       } catch (error) {
+//         console.error("Error fetching category events:", error)
+//         setCategoryEvents([])
+//         setIsLoading(false)
+//       }
+//     }
+    
+//     fetchCategoryEvents()
+//   }, [category, pageType, zoneId])
+
+//   // Generate concatenated title for the bottom (like YouTube mix playlists)
+//   const concatenatedTitles = categoryEvents
+//     .map(event => event.name)
+//     .join(" • ")
+
+//   if (isLoading) {
+//     return (
+//       <div className={cn("relative", className)}>
+//         <div className="animate-pulse">
+//           <div className="bg-muted rounded-lg h-48 mb-4" />
+//           <div className="bg-muted rounded h-4 w-20 mx-auto mb-2" />
+//           <div className="bg-muted rounded h-3 w-32 mx-auto" />
+//         </div>
+//       </div>
+//     )
+//   }
+
+//   if (categoryEvents.length === 0) return null
+
+//   // Customize stack label based on page type
+//   const getStackLabel = () => {
+//     switch (pageType) {
+//       case "zone":
+//         return `${category} Zone Mix`
+//       case "global":
+//         return `Global ${category} Mix`
+//       default:
+//         return `${category} Mix`
+//     }
+//   }
+
+//   return (
+//     <div className={cn("relative", className)}>
+//       <div className="flex flex-col items-center">
+//         {/* Card Stack */}
+//         <div className="relative">
+//           <CardStack 
+//             items={categoryEvents} 
+//             offset={8} 
+//             scaleFactor={0.06} 
+//           />
+//         </div>
+        
+//         {/* Category Badge and Title */}
+//         <div className="mt-4 text-center max-w-xs">
+//           <div className="flex items-center justify-center gap-2 mb-2">
+//             <Badge variant="outline" className="text-xs">
+//               {getStackLabel()}
+//             </Badge>
+//             <span className="text-xs text-muted-foreground">
+//               {categoryEvents.length} events
+//             </span>
+//           </div>
+          
+//           {/* Concatenated titles like YouTube */}
+//           <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+//             {concatenatedTitles}
+//           </p>
+//         </div>
+//       </div>
+//     </div>
+//   )
+// }

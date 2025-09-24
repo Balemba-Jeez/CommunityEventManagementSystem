@@ -3,8 +3,10 @@
 "use client"
 import { DashboardLayout } from "../pages/layouts/DashboardLayout"
 import { EventsGrid } from "@/components/events/EventsGrid"
+import { useAuth } from "@/context/AuthContext";
 
 export default function GlobalEvents() {
+  const { user } = useAuth();
   return (
     <DashboardLayout>
       {(sidebarCollapsed) => (
@@ -13,7 +15,7 @@ export default function GlobalEvents() {
             <div>
               <h1 className="text-3xl font-bold text-balance">Global Events</h1>
               <p className="text-muted-foreground mt-2">
-                Connect with the worldwide community through global events
+                Connect with the community through global events
               </p>
             </div>
           </div>

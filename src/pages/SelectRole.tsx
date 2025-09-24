@@ -9,6 +9,7 @@ import { ProgressFlow } from "@/components/auth/ProgressFlow";
 import { useToast } from "../hooks/use-toast";
 import axios from "axios";
 import { User, Users, Building2, ShieldCheck, Crown } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const roleIcons: Record<string, JSX.Element> = {
   visitor: <User className="w-6 h-6 text-royal-blue" aria-label="Visitor" />,
@@ -32,14 +33,17 @@ const SelectRole = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [userRoles, setUserRoles] = useState<Role[]>([]);
+  const { login } = useAuth();
 
 
 // Load roles from localStorage
   useEffect(() => {
-    const storedRoles = localStorage.getItem("roles");
+    const storedRoles = localStorage.getItem("userRoles");
     if (storedRoles) {
       try {
         const parsed = JSON.parse(storedRoles);
+
+        console.log('roleParsed',parsed)
 
         // Map plain role names into Role objects for RoleList
         const formatted: Role[] = parsed.map((roleName: string) => ({
@@ -72,16 +76,27 @@ const handleRoleSelect = async (role: Role) => {
 
     const { token, user } = response.data;
 
-    // Save final login token & user info
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+    console.log('token recieved from backend',token, user);
 
+    // Save final login token & user info
+    // localStorage.setItem("token", token);
+    // localStorage.setItem("user", JSON.stringify(user));
+    login(user, token);
+    
+
+  if (role.id === "general_event_manager") {
+    toast({
+      title: "Welcome, Event Manager!",
+      description: `Ready to manage events, ${user.name}? 🎪`,
+    });
+    navigate("/event-manager/dashboard");
+  } else if (role.id === "member") {
     toast({
       title: "Login successful!",
-      description: `Welcome, ${user.email}`,
+      description: `Welcome, ${user.name} 🎉`,
     });
-
     navigate("/dashboard");
+  }
 
   } catch (error: any) {
     toast({

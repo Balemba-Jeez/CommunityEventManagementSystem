@@ -16,6 +16,8 @@ const Login = () => {
 const handleLogin = async (data: { email: string; password: string }) => {
   setLoading(true);
 
+  //Authenticating user
+
   try {
     const response = await axios.post("http://localhost:3000/api/login", {
       email: data.email,
@@ -28,7 +30,7 @@ const handleLogin = async (data: { email: string; password: string }) => {
     if (tempToken) localStorage.setItem("tempToken", tempToken);
 
     // Determine toast content and next page
-    let toastTitle = "";
+    let toastTitle = "Login Successful";
     let toastDescription = "";
     let nextPage = "/";
 
@@ -61,6 +63,7 @@ const handleLogin = async (data: { email: string; password: string }) => {
 
             navigate("/approval-waiting"); // optional page
         } else {
+          console.log('showing normal toast for normal flow')
             // Normal flow → go to select role
             toast({
             title: `Welcome back, ${user.name}! 🎉`,

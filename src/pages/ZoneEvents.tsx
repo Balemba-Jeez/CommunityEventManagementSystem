@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { DashboardLayout } from "../pages/layouts/DashboardLayout";
 import { EventsGrid } from "@/components/events/EventsGrid";
 import { Event, PageType } from "@/types/events";
+import { useAuth } from "@/context/AuthContext";
 
 interface ZoneParams extends Record<string, string> {
   zoneId: string;
@@ -10,6 +11,7 @@ interface ZoneParams extends Record<string, string> {
 
 const ZoneEvents: React.FC = () => {
   const { zoneId } = useParams<ZoneParams>();
+  const { user, loginUser } = useAuth();
   
   return (
     <DashboardLayout>
@@ -25,7 +27,7 @@ const ZoneEvents: React.FC = () => {
           </div>
           <EventsGrid 
             pageType="zone"
-            zoneId={zoneId}
+            zoneId={user?.zone}
             showStacks={true}
             stackCategories={["Technology", "Community", "Business"]}
           />

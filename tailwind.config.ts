@@ -28,7 +28,11 @@ export default {
     				DEFAULT: 'hsl(var(--primary))',
     				foreground: 'hsl(var(--primary-foreground))',
     				glow: 'hsl(var(--primary-glow))',
-    				soft: 'hsl(var(--primary-soft))'
+    				soft: 'hsl(var(--primary-soft))',
+					// light: "#3D4DA8",
+					// lighter: "#5667BF",
+					// dark: "#212C6B",
+					// darker: "#141C44",
     			},
     			secondary: {
     				DEFAULT: 'hsl(var(--secondary))',
