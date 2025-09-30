@@ -34,6 +34,7 @@ import { PayoutCharts } from '../../components/eventmanager/dashboard/PayoutChar
 import { SalesTable } from '../../components/eventmanager/dashboard/SalesTable';
 import { EventsPage as AllEventPage } from './EventsPage';
 import { PendingEventsPage as PendingEventPage } from './PendingEventsPage';
+import { CategoryPage } from './CategoryPage';
 
 // Placeholder components for other pages - replace these with your actual page components
 const EventsPage = () => (
@@ -45,10 +46,7 @@ const PendingEventsPage = () => (
 );
 
 const CategoriesPage = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-bold mb-4">Categories Management</h1>
-    <p>Categories page content will go here...</p>
-  </div>
+  <CategoryPage />
 );
 
 const GoLivePage = () => (
