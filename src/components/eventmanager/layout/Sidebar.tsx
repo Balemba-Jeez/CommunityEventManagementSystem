@@ -189,7 +189,7 @@ export function Sidebar({ onNavigate }) {
   return (
     <>
       {/* Toggle Button - visible when sidebar is closed */}
-      {!isOpen && (
+      {/* {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
           style={{
@@ -208,7 +208,7 @@ export function Sidebar({ onNavigate }) {
         >
           <Menu className="h-5 w-5" />
         </button>
-      )}
+      )} */}
 
       {/* Sidebar */}
       <div 
@@ -227,7 +227,7 @@ export function Sidebar({ onNavigate }) {
         <div className="">
           <Logo />
         </div>
-        <button
+        {/* <button
           onClick={() => setIsOpen(false)}
           style={{
             backgroundColor: 'transparent',
@@ -242,7 +242,7 @@ export function Sidebar({ onNavigate }) {
           }}
         >
           <X className="h-5 w-5" />
-        </button>
+        </button> */}
       </div>
       
       <div className="py-4 flex-1 overflow-y-auto" style={{ paddingBottom: '24px' }}>

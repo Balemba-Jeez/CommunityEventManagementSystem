@@ -12,10 +12,9 @@ import { CalendarPlusIcon, DownloadIcon } from "lucide-react"
 interface ResponsiveHeaderIconsProps {
   layout?: "grid" | "list"
   onLayoutChange?: (layout: "grid" | "list") => void
-  page?: "events" | "pending-events" | "categories" | "default"
 }
 
-export function ResponsiveHeaderIcons({ layout = "grid", onLayoutChange, page = "default" }: ResponsiveHeaderIconsProps) {
+export function ResponsiveHeaderIcons({ layout = "grid", onLayoutChange }: ResponsiveHeaderIconsProps) {
     const handleLayoutChange = (selectedLayout: "grid" | "list" | "table" | "cards") => {
     // Map layout options to grid/list for EventLayout
     if (selectedLayout === "grid" || selectedLayout === "cards") {
@@ -32,7 +31,7 @@ export function ResponsiveHeaderIcons({ layout = "grid", onLayoutChange, page = 
           <div className="flex items-center gap-4 md:gap-6 flex-shrink-0">
             {/* Statistics section */}
             <div className="hidden md:block">
-              <IconStatistics page={page}/>
+              <IconStatistics />
             </div>
 
             {/* Action buttons */}
@@ -80,19 +79,16 @@ export function ResponsiveHeaderIcons({ layout = "grid", onLayoutChange, page = 
             {/* View control dropdowns */}
             <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
               <SortingDropdown
-                page={page}
                 onSelectionChange={(selections) => {
                   console.log("Selection changed:", selections)
                 }}
               />
               <FilterDropdown
-                page={page}
                 onFilterChange={(filters) => {
                   console.log("Filters changed:", filters)
                 }}
               />
               <EventSortingDropdown
-                page={page}
                 onSortChange={(sortBy, order) => {
                   console.log("Sort changed:", sortBy, order)
                 }}

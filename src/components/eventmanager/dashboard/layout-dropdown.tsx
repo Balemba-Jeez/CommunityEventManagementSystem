@@ -68,7 +68,6 @@ export function LayoutDropdown({ onLayoutChange }: LayoutDropdownProps) {
                   className="flex items-center gap-2 bg-background border-border text-foreground hover:bg-accent"
                 >
                   {getLayoutIcon(selectedLayout)}
-                  {getLayoutLabel(selectedLayout)}
                   <ChevronDownIcon className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>

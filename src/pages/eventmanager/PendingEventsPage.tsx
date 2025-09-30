@@ -80,7 +80,7 @@ const sampleEvents = [
     imageUrl: "/comedy-club-stage-spotlight.jpg",
   },
 ]
-export const EventsPage = () => {
+export const PendingEventsPage = () => {
   // const [activeTab, setActiveTab] = useState('Active');
   // const [viewMode, setViewMode] = useState('grid');
   const [layout, setLayout] = useState<"grid" | "list">("grid")
@@ -106,7 +106,7 @@ export const EventsPage = () => {
         </div>
       </div> */}
       {/* Header */}
-      <ResponsiveHeaderIcons layout={layout} onLayoutChange={setLayout} />
+      <ResponsiveHeaderIcons page="pending-events" layout={layout} onLayoutChange={setLayout} />
       {/* Event Layout */}
       <div className="container mx-auto px-4 py-8">
         <EventLayout events={sampleEvents} layout={layout} onLayoutChange={setLayout} />

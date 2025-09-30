@@ -33,6 +33,7 @@ import { StatCards } from '../../components/eventmanager/dashboard/StatCards';
 import { PayoutCharts } from '../../components/eventmanager/dashboard/PayoutCharts';
 import { SalesTable } from '../../components/eventmanager/dashboard/SalesTable';
 import { EventsPage as AllEventPage } from './EventsPage';
+import { PendingEventsPage as PendingEventPage } from './PendingEventsPage';
 
 // Placeholder components for other pages - replace these with your actual page components
 const EventsPage = () => (
@@ -40,10 +41,7 @@ const EventsPage = () => (
 );
 
 const PendingEventsPage = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-bold mb-4">Pending Events</h1>
-    <p>Pending events page content will go here...</p>
-  </div>
+ <PendingEventPage />
 );
 
 const CategoriesPage = () => (
