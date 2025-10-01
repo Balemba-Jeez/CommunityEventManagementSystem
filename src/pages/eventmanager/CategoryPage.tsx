@@ -118,7 +118,7 @@ export const CategoryPage = () => {
   const [layout, setLayout] = useState<"grid" | "list">("grid")
   return <div className="w-full">
       {/* Header */}
-      <ResponsiveHeaderIcons page="pending-events" layout={layout} onLayoutChange={setLayout} />
+      <ResponsiveHeaderIcons page="categories" layout={layout} onLayoutChange={setLayout} />
       {/* Event Layout */}
       <div className="py-8">
         {hasCategories ? <CategoriesGrid categories={categories} /> : <EmptyCategories />}

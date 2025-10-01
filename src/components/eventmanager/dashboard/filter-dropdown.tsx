@@ -291,7 +291,7 @@ interface FilterState {
 
 interface FilterDropdownProps {
   onFilterChange?: (filters: FilterState) => void
-  page?: "events" | "pending-events" | "categories" | "default"
+  page?: "events" | "pending-events" | "categories" | "go-live" | "default"
 }
 
 export function FilterDropdown({ onFilterChange, page = "default" }: FilterDropdownProps) {
@@ -301,7 +301,8 @@ export function FilterDropdown({ onFilterChange, page = "default" }: FilterDropd
     dateRanges: [],
   })
   
-  const showStatusFilter = page !== "pending-events"
+  const showStatusFilter = page !== "pending-events" && page !== "categories" && page !== "go-live"
+  const showCategoryFilter = page !== "categories"
 
   const handleCategoryToggle = (category: CategoryOption, checked: boolean) => {
     const newCategories = checked ? [...filters.categories, category] : filters.categories.filter((c) => c !== category)
@@ -343,26 +344,28 @@ export function FilterDropdown({ onFilterChange, page = "default" }: FilterDropd
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-popover border-border shadow-lg" align="start">
                 <DropdownMenuGroup>
-                  {/* Category Filter */}
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>Category</DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent className="w-48 bg-popover border-border shadow-lg">
-                      {(["tech", "music", "sports", "business", "education"] as CategoryOption[]).map((category) => (
-                        <DropdownMenuItem
-                          key={category}
-                          className="flex items-center gap-2 cursor-pointer"
-                          onSelect={(e) => e.preventDefault()}
-                          onClick={() => handleCategoryToggle(category, !filters.categories.includes(category))}
-                        >
-                          <Checkbox
-                            checked={filters.categories.includes(category)}
-                            onCheckedChange={(checked) => handleCategoryToggle(category, checked as boolean)}
-                          />
-                          <span className="capitalize">{category}</span>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuSubContent>
-                  </DropdownMenuSub>
+                  {/* Category Filter - Hidden on categories page */}
+                  {showCategoryFilter && (
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>Category</DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent className="w-48 bg-popover border-border shadow-lg">
+                        {(["tech", "music", "sports", "business", "education"] as CategoryOption[]).map((category) => (
+                          <DropdownMenuItem
+                            key={category}
+                            className="flex items-center gap-2 cursor-pointer"
+                            onSelect={(e) => e.preventDefault()}
+                            onClick={() => handleCategoryToggle(category, !filters.categories.includes(category))}
+                          >
+                            <Checkbox
+                              checked={filters.categories.includes(category)}
+                              onCheckedChange={(checked) => handleCategoryToggle(category, checked as boolean)}
+                            />
+                            <span className="capitalize">{category}</span>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  )}
 
                   {/* Status Filter - Hidden on pending-events page */}
                   {showStatusFilter && (
@@ -413,7 +416,7 @@ export function FilterDropdown({ onFilterChange, page = "default" }: FilterDropd
           </div>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{showStatusFilter ? "Filter events by Category, Status, Date Range" : "Filter events by Category, Date Range"}</p>
+          <p>{showStatusFilter && showCategoryFilter ? "Filter events by Category, Status, Date Range" : !showStatusFilter ? "Filter events by Category, Date Range" : "Filter events by Status, Date Range"}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

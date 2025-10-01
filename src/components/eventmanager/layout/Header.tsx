@@ -88,7 +88,7 @@ export function Header({
             </TooltipContent>
           </Tooltip>
          
-          {/* Replace the hardcoded profile section with UserProfileDropdown */}
+          {/* UserProfileDropdown */}
           <UserProfileDropdown />
         </div>
       </header>

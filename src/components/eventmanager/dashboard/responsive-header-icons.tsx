@@ -9,14 +9,15 @@ import SearchComponent from "./search-component"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { CalendarPlusIcon, DownloadIcon } from "lucide-react"
+
 interface ResponsiveHeaderIconsProps {
   layout?: "grid" | "list"
   onLayoutChange?: (layout: "grid" | "list") => void
-  page?: "events" | "pending-events" | "categories" | "default"
+  page?: "events" | "pending-events" | "categories" | "go-live" | "default"
 }
 
 export function ResponsiveHeaderIcons({ layout = "grid", onLayoutChange, page = "default" }: ResponsiveHeaderIconsProps) {
-    const handleLayoutChange = (selectedLayout: "grid" | "list" | "table" | "cards") => {
+  const handleLayoutChange = (selectedLayout: "grid" | "list" | "table" | "cards") => {
     // Map layout options to grid/list for EventLayout
     if (selectedLayout === "grid" || selectedLayout === "cards") {
       onLayoutChange?.("grid")
@@ -24,6 +25,28 @@ export function ResponsiveHeaderIcons({ layout = "grid", onLayoutChange, page = 
       onLayoutChange?.("list")
     }
   }
+
+  const showSortingDropdown = page !== "categories"
+  
+  // Dynamic button text based on page
+  const getAddButtonText = () => {
+    if (page === "categories") return "Add new category"
+    if (page === "go-live") return "Start a new stream"
+    return "Add new event"
+  }
+
+  const getExportButtonText = () => {
+    if (page === "categories") return "Export categories list as PDF"
+    if (page === "go-live") return "Export streams list as PDF"
+    return "Export events list as PDF"
+  }
+
+  const getSearchPlaceholder = () => {
+    if (page === "categories") return "Search categories..."
+    if (page === "go-live") return "Search streams..."
+    return "Search events..."
+  }
+
   return (
     <div className="w-full bg-background ">
       <div className="max-w-7xl">
@@ -32,7 +55,7 @@ export function ResponsiveHeaderIcons({ layout = "grid", onLayoutChange, page = 
           <div className="flex items-center gap-4 md:gap-6 flex-shrink-0">
             {/* Statistics section */}
             <div className="hidden md:block">
-              <IconStatistics page={page}/>
+              <IconStatistics page={page} />
             </div>
 
             {/* Action buttons */}
@@ -45,7 +68,7 @@ export function ResponsiveHeaderIcons({ layout = "grid", onLayoutChange, page = 
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Add new event</p>
+                    <p>{getAddButtonText()}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -58,7 +81,7 @@ export function ResponsiveHeaderIcons({ layout = "grid", onLayoutChange, page = 
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Export events list as PDF</p>
+                    <p>{getExportButtonText()}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -70,7 +93,7 @@ export function ResponsiveHeaderIcons({ layout = "grid", onLayoutChange, page = 
             {/* Search bar */}
             <div className="flex-1 lg:w-64 min-w-0 mr-2 md:mr-4">
               <SearchComponent
-                placeholder="Search events..."
+                placeholder={getSearchPlaceholder()}
                 onSearch={(query) => console.log("Search:", query)}
                 showMobileSearch={false}
                 className="w-full"
@@ -79,12 +102,14 @@ export function ResponsiveHeaderIcons({ layout = "grid", onLayoutChange, page = 
 
             {/* View control dropdowns */}
             <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-              <SortingDropdown
-                page={page}
-                onSelectionChange={(selections) => {
-                  console.log("Selection changed:", selections)
-                }}
-              />
+              {showSortingDropdown && (
+                <SortingDropdown
+                  page={page}
+                  onSelectionChange={(selections) => {
+                    console.log("Selection changed:", selections)
+                  }}
+                />
+              )}
               <FilterDropdown
                 page={page}
                 onFilterChange={(filters) => {

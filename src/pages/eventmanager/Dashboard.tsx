@@ -35,6 +35,7 @@ import { SalesTable } from '../../components/eventmanager/dashboard/SalesTable';
 import { EventsPage as AllEventPage } from './EventsPage';
 import { PendingEventsPage as PendingEventPage } from './PendingEventsPage';
 import { CategoryPage } from './CategoryPage';
+import { GoLiveEventsPage } from './GoLiveEventPage';
 
 // Placeholder components for other pages - replace these with your actual page components
 const EventsPage = () => (
@@ -50,10 +51,7 @@ const CategoriesPage = () => (
 );
 
 const GoLivePage = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-bold mb-4">Go Live</h1>
-    <p>Go live page content will go here...</p>
-  </div>
+  <GoLiveEventsPage />
 );
 
 const ContributionsPage = () => (

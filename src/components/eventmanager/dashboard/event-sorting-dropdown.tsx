@@ -160,14 +160,15 @@ type SortOrder = "asc" | "desc"
 
 interface EventSortingDropdownProps {
   onSortChange?: (sortBy: SortOption, order: SortOrder) => void
-  page?: "events" | "pending-events" | "categories" | "default"
+  page?: "events" | "pending-events" | "categories" | "go-live" | "default"
 }
 
 export function EventSortingDropdown({ onSortChange, page = "default" }: EventSortingDropdownProps) {
   const [sortBy, setSortBy] = useState<SortOption>("date")
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc")
   
-  const showStatusSort = page !== "pending-events"
+  const showStatusSort = page !== "pending-events" && page !== "categories" && page !== "go-live"
+  const showCategorySort = page !== "categories"
 
   const handleSortFieldChange = (newSortBy: SortOption) => {
     setSortBy(newSortBy)
@@ -177,18 +178,6 @@ export function EventSortingDropdown({ onSortChange, page = "default" }: EventSo
   const handleOrderChange = (newOrder: SortOrder) => {
     setSortOrder(newOrder)
     onSortChange?.(sortBy, newOrder)
-  }
-
-  const getSortLabel = () => {
-    const labels = {
-      date: "Date",
-      status: "Status",
-      title: "Title",
-      location: "Location",
-      category: "Category",
-      createdAt: "Created At",
-    }
-    return `${labels[sortBy]} (${sortOrder === "asc" ? "A-Z" : "Z-A"})`
   }
 
   return (
@@ -238,12 +227,15 @@ export function EventSortingDropdown({ onSortChange, page = "default" }: EventSo
                           Location
                         </Label>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="category" id="category" />
-                        <Label htmlFor="category" className="cursor-pointer">
-                          Category
-                        </Label>
-                      </div>
+                      {/* Category option - Hidden on categories page */}
+                      {showCategorySort && (
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="category" id="category" />
+                          <Label htmlFor="category" className="cursor-pointer">
+                            Category
+                          </Label>
+                        </div>
+                      )}
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="createdAt" id="createdAt" />
                         <Label htmlFor="createdAt" className="cursor-pointer">
